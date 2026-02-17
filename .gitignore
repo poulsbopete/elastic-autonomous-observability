@@ -1,0 +1,5 @@
+# Instruqt
+*.remote
+
+# OS
+.DS_Store

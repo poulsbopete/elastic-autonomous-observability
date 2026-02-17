@@ -1,0 +1,34 @@
+slug: elastic-autonomous-observability
+id: tednx0xvsfit
+title: Elastic Autonomous Observability
+teaser: Send logs, metrics, and traces via OpenTelemetry to Elastic Serverless and
+  learn signal correlation, latency investigation, and cost optimization.
+description: |
+  A hands-on workshop for engineers who want to observe microservices using OpenTelemetry
+  and Elastic Serverless. You will configure the OTLP collector, send logs, metrics, and traces,
+  correlate signals across services, investigate latency and failures, reduce cardinality for cost,
+  and use the AI assistant for troubleshooting. Data understanding and investigation—not deployment.
+icon: https://cdn.instruqt.com/assets/templates/ubuntu.png
+tags:
+- elastic
+- opentelemetry
+- serverless
+- observability
+owner: elastic
+developers:
+- peter.simkins@elastic.co
+show_timer: true
+skipping_enabled: true
+idle_timeout: 600
+timelimit: 7200
+lab_config:
+  sidebar_enabled: true
+  feedback_recap_enabled: true
+  feedback_tab_enabled: false
+  loadingMessages: true
+  theme:
+    name: modern-dark
+  override_challenge_layout: false
+  hideStopButton: false
+checksum: "9698752779279914090"
+enhanced_loading: false

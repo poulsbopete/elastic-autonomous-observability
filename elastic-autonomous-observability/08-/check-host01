@@ -1,0 +1,3 @@
+#!/bin/bash
+WORKSHOP_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+exec bash "${WORKSHOP_ROOT}/scripts/check-08.sh" "${WORKSHOP_ROOT}/assets/otel-config.yaml"
