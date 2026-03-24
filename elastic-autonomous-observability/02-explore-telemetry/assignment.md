@@ -8,82 +8,67 @@ teaser: Navigate Elastic Serverless to see logs, distributed traces, and host me
 notes:
 - type: text
   contents: |
-    ## Real OpenTelemetry, Real Data
+    ## Lab 2 — Explore Live OpenTelemetry Data
 
-    Your demo platform is emitting **real OpenTelemetry telemetry** — not synthetic data, not replayed recordings. Every log record, trace span, and metric data point is generated fresh and shipped via OTLP directly to Elastic.
+    **By the end of this challenge you will:**
 
-    **9 microservices** run across:
-    - ☁️ **AWS us-east-1** — 3 services
-    - ☁️ **GCP us-central1** — 3 services
-    - ☁️ **Azure eastus** — 3 services
+    - ✅ Query live logs with ES|QL in Discover
+    - ✅ View distributed traces and service maps in APM
+    - ✅ Inspect host metrics across 3 simulated cloud providers
+    - ✅ Explore the Executive Dashboard for the Fanatics scenario
+    - ✅ Run time-series ES|QL queries against live metric streams
 
-    Background generators also emit host metrics (3 virtual hosts), Kubernetes node metrics, Nginx access logs, MySQL query logs, and distributed traces — giving you a rich, realistic data set to explore.
+    **Your data is real.** Every log, trace, and metric is generated fresh and shipped via OTLP directly to Elastic — no recordings, no synthetic replay.
 - type: text
   contents: |
-    ## Unified Observability: Logs, Metrics & Traces Together
+    ## Three Signals, One Store
 
-    Elastic correlates all three telemetry signals in a single store — no switching between tools, no separate data silos.
+    Elastic correlates logs, metrics, and traces in a single data store — no switching tools, no context loss.
 
-    **How signals connect:**
+    | Signal | Where to look | Index pattern |
+    |--------|--------------|---------------|
+    | **Logs** | Discover → ES\|QL | `logs*` |
+    | **Traces** | Applications → Service inventory | `traces-*` |
+    | **Metrics** | Observability → Infrastructure | `metrics-*` |
 
-    - A **trace span** in an APM service links to the **logs** emitted during that request (via `trace.id`)
-    - A **log error spike** surfaces in the same timeline as **host CPU and memory metrics**
-    - **Service maps** are built automatically from distributed trace spans — no manual topology config
-    - **Infrastructure views** merge OTel host metrics with Kubernetes node/pod data into one inventory
-
-    This unified model is why Elastic consistently tops analyst evaluations for observability breadth.
+    Signals connect automatically — a trace span links to its log lines via `trace.id`, and error spikes correlate with host CPU in the same timeline.
 - type: text
   contents: |
-    ## APM & Distributed Tracing
+    ## What's Generating Telemetry
 
-    Elastic APM captures every request hop across service boundaries, giving you end-to-end latency visibility.
+    **9 scenario microservices** (application logs + traces):
+    Auction Engine · Card Printing · Payment Processing · Fan Engagement · Loyalty Rewards · Streaming CDN · Navigation · Fraud Detection · Fulfillment
 
-    **Key APM capabilities you'll explore:**
+    **Background generators** (infrastructure telemetry):
+    - 3 cloud hosts (AWS, GCP, Azure) — CPU, memory, disk, network
+    - Kubernetes node + pod metrics
+    - Nginx access logs and MySQL slow query logs
+    - VPC flow logs and distributed trace chains
 
-    - **Service Inventory** — health, throughput, error rate, and latency for every instrumented service
-    - **Service Map** — auto-generated topology showing call dependencies and error propagation
-    - **Transaction traces** — full flame-graph breakdown of individual request spans
-    - **Correlations** — statistically significant attributes that appear more in slow or failing transactions vs healthy ones
-
-    In this lab, distributed traces flow from the Bid Engine through the Card Printing service and into Payment Processing — visible in a single trace waterfall.
+    > **Tip:** Set the time range to **Last 15 minutes** to see the freshest data.
 - type: text
   contents: |
-    ## Infrastructure Monitoring with OTel
+    ## ES|QL: Query Telemetry Like a Pipeline
 
-    Elastic's Infrastructure UI works natively with OpenTelemetry host metrics — no Elastic Agent required.
+    ES|QL is Elastic's pipe-based query language. Run these in **Discover → ES|QL** during the challenge:
 
-    **What you'll see:**
+    **Error spike by service:**
+    ```
+    FROM logs*
+    | WHERE @timestamp > NOW() - 15 MINUTES
+    | WHERE severity_text == "ERROR"
+    | STATS errors = COUNT(*) BY service.name
+    | SORT errors DESC
+    ```
 
-    - **Hosts view** — CPU utilization, memory, disk I/O, and network throughput per host, auto-grouped by cloud provider
-    - **Kubernetes view** — node and pod metrics from the OTel Collector's kubeletstats receiver
-    - **Metric Explorer** — ad-hoc charting of any `metrics-*` field using Lens or ES|QL
-
-    The OTel host metrics receiver emits the exact scope names (`hostmetricsreceiver/internal/scraper/*`) that Elastic's Infrastructure UI expects — so dashboards populate automatically without any manual data-view configuration.
-- type: text
-  contents: |
-    ## ES|QL: Time-Series Analysis at Scale
-
-    The `TS` (Time Series) command in ES|QL unlocks high-performance queries over TSDB-optimized metric data streams.
-
-    **Examples you'll run in this challenge:**
-
+    **Latency trend over time:**
     ```
     TS metrics*
+    | WHERE @timestamp > NOW() - 30 MINUTES
     | EVAL minute = DATE_TRUNC(1 minute, @timestamp)
-    | STATS avg_latency = AVG(http.server.request.duration) BY service.name, minute
+    | STATS avg_latency = AVG(auction.bid_latency_ms) BY minute
     | SORT minute DESC
     ```
-
-    ```
-    TS metrics*
-    | EVAL minute = DATE_TRUNC(1 minute, @timestamp)
-    | STATS
-        errors = COUNT(*) WHERE severity_text == "ERROR",
-        total  = COUNT(*)
-      BY service.name, minute
-    ```
-
-    ES|QL queries run directly in **Discover → ES|QL** — no dashboard required.
 tabs:
 - id: lxtizjrsysoh
   title: Demo App

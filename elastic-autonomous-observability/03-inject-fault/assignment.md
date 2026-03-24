@@ -8,62 +8,65 @@ teaser: Use the incident simulator to inject a realistic multi-cloud fault and w
 notes:
 - type: text
   contents: |
-    ## Break Things on Purpose
+    ## Lab 3 — Inject a Fault and Watch Elastic Detect It
 
-    The most powerful way to demonstrate observability is to break something — deliberately, in a controlled way — and watch the platform catch it.
+    **By the end of this challenge you will:**
 
-    The demo platform has **20 independent fault channels**, each simulating a realistic incident: upstream pressure anomalies, network packet loss, sensor calibration drift, relay corruption, and more.
+    - ✅ Trigger a realistic fault using the Demo App Chaos controller
+    - ✅ Watch the error spike appear in Elastic's log stream within seconds
+    - ✅ See an ES|QL alert rule fire within 30–60 seconds
+    - ✅ Observe the AI agent begin its investigation automatically
 
-    When you trigger a fault:
-    1. The affected microservices start emitting error-level OTLP logs with the fault's error type
-    2. Cascade effects propagate warnings to dependent services
-    3. Elastic's ES|QL alert rules detect the error spike within 30 seconds
-    4. The AI agent starts investigating — looking up related events, querying logs, correlating traces
-    5. The automated remediation workflow fires
+    **You have 20 fault channels to choose from** — each simulates a realistic incident across AWS, GCP, and Azure services. Pick any one and watch Elastic light up.
 - type: text
   contents: |
-    ## Elastic Alerting: ES|QL-Powered Detection
+    ## How Fault Detection Works
 
-    Every alert rule in this lab is backed by an **ES|QL query** that runs on a 30-second schedule — detecting error spikes the moment they appear in the data stream.
+    Every fault channel is monitored by a dedicated **ES|QL alert rule** running on a 30-second schedule:
 
-    **How alert rules work in Elastic Serverless:**
+    ```
+    FROM logs*
+    | WHERE @timestamp > NOW() - 2 MINUTES
+    | WHERE body.text : "MacAddressFlappingException"
+    | STATS error_count = COUNT(*)
+    | WHERE error_count > 5
+    ```
 
-    - Rules run as managed scheduled tasks — no infrastructure to maintain
-    - The `.es-query` rule type executes ES|QL or KQL against any index pattern
-    - Thresholds are fully configurable: count, percentage, rate of change
-    - Each rule can trigger multiple **actions**: workflows, webhooks, email, Slack, PagerDuty, Jira
-    - Alert state is tracked per-group, so you get one alert per fault channel — not thousands of duplicates
-
-    In this lab, 20 alert rules monitor 20 fault channels simultaneously.
+    When errors exceed the threshold:
+    1. The alert fires and appears in **Observability → Alerts**
+    2. The alert triggers the **Significant Event Notification** workflow
+    3. The workflow calls the **AI agent** with the error context
+    4. The agent queries logs, correlates signals, and produces a root-cause analysis
 - type: text
   contents: |
-    ## Streams: Significant Event Detection
+    ## Fault Cascade: Why Observability Is Hard
 
-    Elastic **Streams** (Technical Preview) is a zero-config log routing and analysis layer built on top of data streams.
+    A single fault channel doesn't just affect one service — it cascades:
 
-    **Significant Events on the `logs` stream:**
+    | Step | What happens |
+    |------|-------------|
+    | **1** | Primary service emits `ERROR` logs with a specific exception type |
+    | **2** | Downstream services emit `WARN` — degraded upstream responses |
+    | **3** | Trace spans show elevated latency at integration boundaries |
+    | **4** | Host metrics spike on the affected cloud provider |
 
-    - You define KQL queries that describe meaningful patterns (e.g., `body.text: "FuelPressureException" AND severity_text: "ERROR"`)
-    - Elastic monitors ingested log volume against those queries in near-real-time
-    - When a pattern's rate deviates significantly from baseline, it surfaces as a **Significant Event**
-    - Significant Events appear in the Observability UI and can trigger workflows
-
-    This is how Elastic detects *unknown unknowns* — anomalous log patterns you didn't pre-define an alert for.
+    This cascade across logs, metrics, and traces is what makes incidents hard to diagnose manually — and what makes Elastic's correlated view so powerful.
 - type: text
   contents: |
-    ## How Faults Propagate Through Microservices
+    ## 20 Fault Channels — Pick One
 
-    The Fanatics Live scenario simulates realistic fault cascade behavior — not just a single service throwing errors.
+    | Category | Cloud | Example Faults |
+    |----------|-------|---------------|
+    | **Network Core** | Azure | MAC flapping, BGP peer drop, spanning tree change |
+    | **Security** | Azure | Firewall session exhaustion, SSL cert expiry |
+    | **WiFi / Network Access** | GCP | AP disconnect storm, channel interference |
+    | **Network Services** | Azure | DNS failure, DHCP lease storm |
+    | **Commerce** | AWS | Bid latency spike, payment timeout, catalog sync failure |
+    | **Manufacturing** | AWS | Print queue overflow, QC rejection spike |
+    | **Logistics** | GCP | Label printer failure, warehouse scanner desync |
+    | **Cloud Ops** | GCP | Orphaned resource alert, VPN tunnel flapping |
 
-    **Cascade pattern:**
-
-    1. A fault channel activates on a primary service (e.g., `fuel-system`)
-    2. That service begins emitting `ERROR` severity OTLP logs with a specific exception type
-    3. Downstream services that depend on it emit `WARN` logs indicating degraded upstream responses
-    4. End-to-end trace spans show elevated latency or errors at the integration boundaries
-    5. Host metrics on the affected cloud provider may show elevated CPU from retry storms
-
-    This cascade is what makes observability *hard* in practice — and what makes Elastic's correlated view across logs, metrics, and traces so valuable for incident response.
+    Start with **Channel 12 — Auction Bid Latency Spike** for the clearest end-to-end demo.
 tabs:
 - id: u5cmidsfkwal
   title: Demo App

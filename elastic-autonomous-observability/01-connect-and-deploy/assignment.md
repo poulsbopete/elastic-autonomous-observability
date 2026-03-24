@@ -8,81 +8,70 @@ teaser: Wire the demo platform to your Elastic Cloud project and launch 9 micros
 notes:
 - type: text
   contents: |
-    ## Elastic Autonomous Observability
+    ## Lab 1 — Connect to Elastic Cloud & Deploy
 
-    In this lab you'll connect a pre-built multi-cloud demo platform to your Elastic Cloud project. The platform simulates 9 microservices across AWS, GCP, and Azure, emitting real OpenTelemetry logs, metrics, and traces directly into Elastic.
+    **What's happening right now:**
+    Your Elastic Cloud Serverless Observability project is being provisioned and the Fanatics Live demo platform is being configured with your credentials.
 
-    Once connected, you'll choose an industry scenario and deploy the full observability stack — AI agent, alert rules, workflows, dashboards — with a single click.
+    **By the end of this challenge you will:**
 
-    **What you'll do in this challenge:**
+    - ✅ Confirm the Fanatics Live scenario is deployed and sending telemetry
+    - ✅ Open your Elastic Serverless project — no login required
+    - ✅ Verify logs, metrics, and traces are flowing from 9 microservices
+    - ✅ Review the auto-provisioned AI agent, alert rules, and workflows
 
-    - Explore the pre-deployed Fanatics Live scenario in the Demo App
-    - Open the Elastic Serverless tab — no login required
-    - Verify live OpenTelemetry telemetry is flowing from all 9 microservices
-    - Review the auto-provisioned AI agent, alert rules, and workflows
+    *Setup takes 3–4 minutes. Grab a coffee — it'll be ready soon.*
 - type: text
   contents: |
-    ## Elastic Serverless: Zero Ops Observability
+    ## Your Lab Environment
 
-    Elastic Serverless automatically scales compute and storage independently — you only pay for what you ingest and query, never for idle capacity.
+    **Two tabs, everything you need:**
 
-    **Key serverless facts:**
+    | Tab | What it is |
+    |-----|-----------|
+    | **Demo App** | Control panel — view service health, manage deployments, inject faults |
+    | **Elastic Serverless** | Your Observability project — pre-logged in, data already flowing |
 
-    - **Three project types:** Elasticsearch, Observability, and Security — each optimized for its workload
-    - **No cluster management:** no shard sizing, no JVM tuning, no node rolling restarts
-    - **Instant provisioning:** a new Observability project is ready in under 60 seconds
-    - **Built-in AI:** every serverless project includes an AI Assistant with access to your live data
+    **The Fanatics Live scenario simulates 9 microservices across 3 clouds:**
+
+    - ☁️ **AWS** — Auction Engine, Card Printing, Payment Processing
+    - ☁️ **GCP** — Fan Engagement, Loyalty Rewards, Streaming CDN
+    - ☁️ **Azure** — Navigation, Fraud Detection, Fulfillment
+
+    Every service emits **real OpenTelemetry** logs, metrics, and traces — no synthetic data.
 - type: text
   contents: |
-    ## OpenTelemetry: The Universal Standard
+    ## What Was Auto-Deployed
 
-    Elastic is a **Platinum member of the CNCF OpenTelemetry project** and ships a certified OTel distribution for zero-code auto-instrumentation.
+    When the lab started, the setup script provisioned your full observability stack automatically:
 
-    **Why OTel matters:**
+    | Resource | Details |
+    |----------|---------|
+    | **Alert rules** | 20 ES\|QL rules — one per fault channel, 30s interval |
+    | **AI agent** | Investigation tools + system prompt |
+    | **Workflows** | Alert → investigate → create case → remediate |
+    | **Dashboards** | Executive dashboard + OTel signal dashboards |
+    | **Data views** | `logs.otel`, `metrics-*`, `traces-*` |
 
-    - Vendor-neutral instrumentation — no lock-in, one SDK for logs, metrics, and traces
-    - Elastic natively ingests OTLP over gRPC and HTTP without a Collector in the path
-    - Resource attributes (service.name, host.name, cloud.provider) flow directly into service maps, infrastructure views, and dashboards
-    - The Elastic OTLP endpoint auto-routes signals: `logs-*`, `metrics-*`, `traces-*`
+    This is the same stack you'd deploy in production — configured in code, repeatable, version-controlled.
 - type: text
   contents: |
-    ## ES|QL: The Query Language Built for Telemetry
+    ## Key Concepts: Elastic Serverless + OpenTelemetry
 
-    ES|QL (Elasticsearch Query Language) is a pipe-based language designed for fast, expressive analysis of logs, metrics, and traces at scale.
+    **Elastic Serverless** scales compute and storage independently. No cluster management, no shard tuning — just ingest and query.
 
-    **Powerful features:**
+    **OpenTelemetry (OTel)** is the CNCF standard for vendor-neutral instrumentation. Elastic is a Platinum member and natively ingests OTLP — no Collector required.
 
-    - `FROM logs* | WHERE severity_text == "ERROR" | STATS count = COUNT(*) BY service.name` — count errors per service in one line
-    - `TS metrics* | EVAL minute = DATE_TRUNC(1 minute, @timestamp) | STATS avg_cpu = AVG(system.cpu.utilization) BY host.name, minute` — time-series CPU by host
-    - Native **change point detection** finds anomalies automatically in time-series data
-    - Results stream back progressively — no waiting for full scans on large datasets
-- type: text
-  contents: |
-    ## Elastic AI Assistant & Autonomous Workflows
+    **ES|QL** is Elastic's pipe-based query language, purpose-built for telemetry at scale:
 
-    Elastic's AI Assistant is embedded directly in the Observability UI — not a separate product — and has native access to your live telemetry.
+    ```
+    FROM logs*
+    | WHERE severity_text == "ERROR"
+    | STATS errors = COUNT(*) BY service.name
+    | SORT errors DESC
+    ```
 
-    **What makes it autonomous:**
-
-    - **AI Agent (Agent Builder):** define tools backed by ES|QL queries and Kibana workflows; the agent picks the right tool for each investigation step
-    - **Workflows:** visual, YAML-defined automation that can query Elasticsearch, call AI agents, send notifications, create cases, and resolve incidents — all triggered by alert rules
-    - **Alert → Workflow → Remediation:** a fault detected in logs can trigger RCA, auto-remediation, and a Kibana case — with no human in the loop
-    - **Significant Events:** Streams API detects statistically unusual log patterns and surfaces them automatically
-- type: text
-  contents: |
-    ## Multi-Cloud Observability in One Place
-
-    This lab simulates a production-like environment spanning three cloud providers simultaneously.
-
-    **The demo architecture:**
-
-    | Cloud | Services |
-    |-------|----------|
-    | AWS   | Ticketing, Bid Engine, Card Printing, Fraud Detection |
-    | GCP   | Fan Engagement, Loyalty Rewards, Streaming CDN |
-    | Azure | Navigation, Payment Processing |
-
-    All 9 services emit **logs, metrics, and traces** via OTLP to a single Elastic Serverless Observability project — giving you a unified view across clouds without any Collector infrastructure.
+    **AI Workflows** connect alert detection to investigation to remediation — all without human intervention.
 tabs:
 - id: f0jcpawmyzuq
   title: Demo App

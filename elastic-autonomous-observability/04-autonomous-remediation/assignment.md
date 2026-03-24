@@ -8,87 +8,68 @@ teaser: Watch Elastic's AI agent investigate the fault, generate a root-cause an
 notes:
 - type: text
   contents: |
-    ## Closing the Loop — Autonomously
+    ## Lab 4 — Autonomous Investigation & Remediation
 
-    This is where Elastic's Autonomous Observability story comes together.
+    **By the end of this challenge you will:**
 
-    When an alert fires, an Elastic Serverless Workflow automatically:
+    - ✅ Watch an ES|QL alert rule detect the fault you injected
+    - ✅ See the Workflow automatically call the AI agent for root-cause analysis
+    - ✅ Review the AI agent's investigation steps and remediation action
+    - ✅ Find the auto-created Kibana Case with the full RCA summary
+    - ✅ Confirm the fault is resolved and the alert recovers
 
-    1. **Searches** recent error logs to gather context
-    2. **Calls the AI agent** with the error details
-    3. The **AI agent** uses its tools to:
-       - Query ES|QL for related error patterns
-       - Look up the event in the significant events log
-       - Cross-reference with infrastructure metrics
-       - Produce a root-cause analysis
-    4. **Calls the remediation API** to resolve the fault
-    5. **Creates a Kibana Case** with the full RCA + remediation summary
-
-    All of this happens within 2–3 minutes of the fault being detected — with zero human interaction required.
+    **This is the complete autonomous loop** — detection → investigation → remediation → documentation — with zero human intervention.
 - type: text
   contents: |
-    ## Kibana Workflows: Orchestration Without Code
+    ## The Autonomous Loop in 5 Steps
 
-    Elastic **Workflows** (Pre-GA) is a YAML-first automation engine built into Kibana Serverless.
+    When your fault alert fires, this happens automatically:
 
-    **What workflows can do:**
+    | Step | What runs | Time |
+    |------|-----------|------|
+    | **1** | ES|QL alert rule detects error spike | 0–60s |
+    | **2** | Alert triggers **Significant Event Notification** workflow | immediate |
+    | **3** | Workflow calls **AI agent** with error context | ~10s |
+    | **4** | AI agent queries logs, identifies root cause, calls remediation | ~30s |
+    | **5** | Workflow creates **Kibana Case** with full RCA + audit trail | ~5s |
 
-    - Query Elasticsearch and ES|QL natively — no external connectors needed
-    - Call AI agents and receive structured responses
-    - Branch on conditions, loop over results, set variables
-    - Send email, Slack, Jira tickets, or webhook calls via connectors
-    - Create Kibana Cases for incident tracking
-    - Trigger other workflows as sub-processes
-
-    Workflows are triggered by **alert rules** (using the built-in `.workflows` system connector), schedules, or manual runs — making them the glue between detection and response.
+    Total time from fault to resolved case: **2–3 minutes**.
 - type: text
   contents: |
-    ## AI Agent Builder: Tools the LLM Can Call
+    ## The AI Agent's Toolbox
 
-    The **Agent Builder** lets you define an AI agent with a set of tools — each backed by an ES|QL query or a workflow — and a system prompt that guides the agent's behavior.
+    The AI agent in this lab has two tools it can call:
 
-    **How the agent in this lab works:**
+    **`log_search`** — searches `logs.otel` by error type using parameterized ES|QL:
+    ```
+    FROM logs.otel, logs.otel.*
+    | WHERE body.text : "{{ error_type }}"
+    | WHERE @timestamp > NOW() - 5 MINUTES
+    | STATS count = COUNT(*) BY service.name
+    ```
 
-    - **`log_search` tool** — parameterized ES|QL that searches `logs.otel` by error type; the agent provides the error type, the query handles field routing
-    - **`remediation_action` tool** — calls the remediation Kibana Workflow with `action_type`, `channel`, and `dry_run: false`
-    - **System prompt** — instructs the agent to always use `body.text` for log searches, produce a structured RCA, and immediately execute remediation after analysis
+    **`remediation_action`** — calls the Remediation Workflow with:
+    ```json
+    { "action_type": "resolve", "channel": 12, "dry_run": false }
+    ```
 
-    The agent runs as a **multi-step reasoning loop**: it calls tools, reads results, and decides its next action — just like a human SRE would.
+    The agent runs a **multi-step reasoning loop**: call a tool → read results → decide next action — just like a human SRE would, but in seconds.
 - type: text
   contents: |
-    ## Kibana Cases: Collaborative Incident Management
+    ## Traditional vs. Autonomous Observability
 
-    Elastic **Cases** is a built-in incident tracking system — no external ticketing tool required.
-
-    **Cases in this lab:**
-
-    - Created automatically by the Workflow after the AI agent completes RCA + remediation
-    - Title includes the scenario name and the alert rule that fired
-    - Description contains a link to the full AI conversation and the RCA summary
-    - Tagged with the scenario namespace and the error type for easy filtering
-    - Severity set to `high` automatically — no manual triage needed
-
-    **Why Cases matter for autonomous observability:** the entire incident lifecycle — detection, investigation, remediation, and documentation — is captured in one place, with a full audit trail, without a human ever touching a terminal.
-- type: text
-  contents: |
-    ## What "Autonomous Observability" Really Means
-
-    Traditional observability is **reactive**: humans watch dashboards, get paged, log in, investigate, fix.
-
-    Elastic's model is **autonomous**: the platform detects, investigates, remediates, and documents — humans review outcomes, not processes.
-
-    **The shift in practice:**
-
-    | Traditional | Autonomous |
+    | Traditional | Elastic Autonomous |
     |---|---|
     | Alert pages on-call engineer | Alert triggers workflow |
-    | Engineer searches logs manually | AI agent queries ES\|QL via tools |
+    | Engineer searches logs manually | AI agent queries ES\|QL |
     | Engineer identifies root cause | Agent produces structured RCA |
     | Engineer runs fix command | Workflow calls remediation API |
-    | Engineer writes incident report | Case created with full audit trail |
-    | MTTR: 30–90 minutes | MTTR: 2–3 minutes |
+    | Engineer writes incident report | Kibana Case auto-created |
+    | **MTTR: 30–90 minutes** | **MTTR: 2–3 minutes** |
 
-    This lab demonstrates that entire journey — in a real Elastic Serverless environment.
+    Humans shift from **doing** to **reviewing** — approving outcomes, not debugging incidents.
+- type: website
+  url: https://poulsbopete.github.io/Vampire-Clone/
 tabs:
 - id: j9eexry1fgmk
   title: Demo App
