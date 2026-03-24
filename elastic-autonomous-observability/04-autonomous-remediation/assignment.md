@@ -68,8 +68,11 @@ notes:
     | **MTTR: 30–90 minutes** | **MTTR: 2–3 minutes** |
 
     Humans shift from **doing** to **reviewing** — approving outcomes, not debugging incidents.
-- type: website
-  url: https://poulsbopete.github.io/Vampire-Clone/
+- type: text
+  contents: |
+    ## While You Wait...
+
+    <iframe src="https://poulsbopete.github.io/Vampire-Clone/" width="100%" height="600" frameborder="0" allowfullscreen></iframe>
 tabs:
 - id: j9eexry1fgmk
   title: Demo App
