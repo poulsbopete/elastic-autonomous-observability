@@ -96,84 +96,39 @@ enhanced_loading: null
 
 # Inject a Fault and Watch Elastic Detect It
 
-Now it's time to break something. The incident simulator lets you inject realistic faults into the simulated environment — then watch Elastic light up.
+Trigger a fault from the **Demo App**, then watch Elastic automatically investigate and create a case — no human intervention required.
 
 ---
 
-## Trigger a Fault
+## Step 1 — Inject a Fault
 
 1. Open the **Demo App** tab
-2. Find your running **Fanatics Collectibles** deployment and click the **Chaos** link next to it
-3. You'll see 20 fault channels organized by subsystem and cloud provider
-4. Select a channel from the dropdown and click **Inject Fault**
+2. Find your running **Fanatics Collectibles** deployment and click the **Chaos** link
+3. Select any fault channel and click **Inject Fault**
+
+> **Recommended:** Start with **Channel 12 — Auction Bid Latency Spike** for the clearest end-to-end demo.
 
 ---
 
-## What to Watch in Elastic Serverless
+## Step 2 — Watch the Workflow Run
 
-Once you trigger a fault, switch to the **Elastic Serverless** tab and watch:
+In the **Elastic Serverless** tab, go to **Observability → Workflows**.
 
-### 1. Logs — Error Spike
+Within 1–2 minutes of injecting the fault, you'll see the **Fanatics Collectibles Significant Event Notification** workflow show a recent execution. Click it to see each step:
 
-The tab opens directly to the error log stream. Or navigate there manually:
-
-**Discover → ES|QL** and run:
-
-```esql
-FROM logs*
-| WHERE @timestamp > NOW() - 10 MINUTES
-| WHERE severity_text == "ERROR"
-| STATS error_count = COUNT(*) BY service.name
-| SORT error_count DESC
-```
-
-You should see an error spike from the affected service within seconds.
-
-### 2. Alert Rules — Detection
-**Observability → Alerts**
-
-The ES|QL alert rules will fire within 30–60 seconds of the error spike. You'll see an active alert appear.
-
-### 3. AI Agent Investigation
-**Observability → AI Assistant** (or the Workflows execution log)
-
-The alert triggers a workflow that calls the AI agent. The agent:
-- Identifies the error type from the alert tags
-- Queries recent error logs for context
-- Searches for related events
-- Produces a root-cause analysis summary
+- **count_errors** — ES|QL query counting recent errors from the affected service
+- **run_rca** — AI agent root-cause analysis
+- **create_case** — Kibana case created with RCA findings
 
 ---
 
-## Verify the Fault is Active
+## Step 3 — Review the Case
 
-Back in the **Demo App** tab, the Chaos controller will show your active channel with a red **ACTIVE** badge. You can also confirm in the **Elastic Serverless** tab — the error log stream will show a spike from the affected service within seconds.
+Go to **Observability → Cases** (or click **Cases** in the left nav).
 
----
+A new case will appear automatically with:
+- The fault name and affected service in the title
+- The AI agent's root-cause analysis in the description
+- Severity set to **High**
 
-## Fault Channel Reference (Fanatics Scenario)
-
-| Ch | Name | Subsystem | Cloud |
-|----|------|-----------|-------|
-| 1 | MAC Address Flapping | network_core | Azure |
-| 2 | Spanning Tree Topology Change | network_core | Azure |
-| 3 | BGP Peer Flapping | network_core | Azure |
-| 4 | Firewall Session Table Exhaustion | security | Azure |
-| 5 | Firewall CPU Overload | security | Azure |
-| 6 | SSL Decryption Certificate Expiry | security | Azure |
-| 7 | WiFi AP Disconnect Storm | network_access | GCP |
-| 8 | WiFi Channel Interference | network_access | GCP |
-| 9 | Client Authentication Storm | network_access | GCP |
-| 10 | DNS Resolution Failure Over VPN | network_services | Azure |
-| 11 | DHCP Lease Storm | network_services | Azure |
-| 12 | Auction Bid Latency Spike | commerce | AWS |
-| 13 | Payment Processing Timeout | commerce | AWS |
-| 14 | Product Catalog Sync Failure | commerce | AWS |
-| 15 | Print Queue Overflow | manufacturing | AWS |
-| 16 | Quality Control Rejection Spike | manufacturing | AWS |
-| 17 | Fulfillment Label Printer Failure | logistics | GCP |
-| 18 | Warehouse Scanner Desync | logistics | GCP |
-| 19 | Orphaned Cloud Resource Alert | cloud_ops | GCP |
-| 20 | Cross-Cloud VPN Tunnel Flapping | cloud_ops | GCP |
-
-✅ **Ready to continue when** at least one fault channel shows **ACTIVE** in the Demo App Chaos controller.
+✅ **Ready to continue when** you can see a workflow execution and an auto-created case in Elastic Serverless.
