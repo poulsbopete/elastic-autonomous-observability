@@ -78,7 +78,7 @@ notes:
 
     Setup takes a few minutes. Pass the time with Vampire Clone:
 
-    <iframe src="https://poulsbopete.github.io/Vampire-Clone/" width="100%" height="550" frameborder="0" allowfullscreen style="border-radius:8px;"></iframe>
+    <iframe src="https://poulsbopete.github.io/Vampire-Clone/" width="100%" height="800" frameborder="0" allowfullscreen style="border-radius:8px;display:block;"></iframe>
 tabs:
 - id: f0jcpawmyzuq
   title: Demo App
