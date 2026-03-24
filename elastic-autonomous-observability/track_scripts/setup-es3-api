@@ -842,6 +842,85 @@ alias demo-chaos="curl -sf http://localhost:8090/api/chaos/status | python3 -m j
 alias demo-restart="systemctl restart elastic-demo && sleep 3 && curl -sf http://localhost:8090/health"
 BASH
 
+echo "Creating SLOs directly via Kibana API..."
+
+create_slo() {
+  local name="$1"
+  local body="$2"
+  local http_code
+  http_code=$(curl -s -o /tmp/slo_response.json -w "%{http_code}" \
+    -X POST "${KIBANA_URL}/api/observability/slos" \
+    -u "admin:${ELASTICSEARCH_PASSWORD}" \
+    -H 'kbn-xsrf: true' \
+    -H 'Content-Type: application/json' \
+    -d "$body")
+  if [[ "$http_code" == "200" || "$http_code" == "201" ]]; then
+    echo "✅ Created: $name (HTTP $http_code)"
+  else
+    echo "⚠️  Failed to create '$name' (HTTP $http_code): $(cat /tmp/slo_response.json 2>/dev/null)"
+  fi
+}
+
+create_slo "Availability SLO" '{
+  "name": "Availability SLO",
+  "description": "Service availability - 95% target, grouped by service name",
+  "indicator": {
+    "type": "sli.kql.custom",
+    "params": {
+      "index": "traces-apm*,traces-*.otel-*",
+      "good": "NOT event.outcome:failure",
+      "filter": "processor.event:transaction",
+      "total": "*",
+      "timestampField": "@timestamp"
+    }
+  },
+  "groupBy": "service.name",
+  "budgetingMethod": "occurrences",
+  "timeWindow": { "duration": "7d", "type": "rolling" },
+  "objective": { "target": 0.95 },
+  "tags": ["auto-created"]
+}'
+
+create_slo "Latency SLO" '{
+  "name": "Latency SLO",
+  "description": "Service latency - 85% of requests under 2s, grouped by service name",
+  "indicator": {
+    "type": "sli.kql.custom",
+    "params": {
+      "index": "traces-apm*,traces-*.otel-*",
+      "filter": "processor.event:transaction AND transaction.duration.us:*",
+      "good": "transaction.duration.us <= 2000000",
+      "total": "transaction.duration.us:*",
+      "timestampField": "@timestamp"
+    }
+  },
+  "groupBy": "service.name",
+  "budgetingMethod": "occurrences",
+  "timeWindow": { "duration": "7d", "type": "rolling" },
+  "objective": { "target": 0.85 },
+  "tags": ["auto-created"]
+}'
+
+create_slo "Error Rate SLO" '{
+  "name": "Error Rate SLO",
+  "description": "Service error rate - less than 5% errors, grouped by service name",
+  "indicator": {
+    "type": "sli.kql.custom",
+    "params": {
+      "index": "traces-apm*,traces-*.otel-*",
+      "filter": "processor.event:transaction",
+      "good": "NOT event.outcome:failure",
+      "total": "*",
+      "timestampField": "@timestamp"
+    }
+  },
+  "groupBy": "service.name",
+  "budgetingMethod": "occurrences",
+  "timeWindow": { "duration": "7d", "type": "rolling" },
+  "objective": { "target": 0.95 },
+  "tags": ["auto-created"]
+}'
+
 echo "Creating SLO Management workflow in Kibana..."
 SLO_WORKFLOW_RESPONSE=$(curl -s -o /tmp/slo_workflow_response.json -w "%{http_code}" \
   -X POST "${KIBANA_URL}/api/observability/workflows" \
