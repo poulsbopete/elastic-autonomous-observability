@@ -85,10 +85,6 @@ notes:
 
     ES|QL queries run directly in **Discover → ES|QL** — no dashboard required.
 tabs:
-- id: 8cpzzvrqyyf8
-  title: Terminal
-  type: terminal
-  hostname: es3-api
 - id: lxtizjrsysoh
   title: Demo App
   type: service
@@ -278,24 +274,5 @@ FROM logs*
 ```
 
 > **Tip:** After triggering a chaos fault in the next challenge, re-run this query to watch the error count spike for the affected service in real time — while healthy services stay flat.
-
----
-
-## Check Your Work
-
-In the **Terminal** tab, run:
-
-```bash
-demo-deployments
-```
-
-This shows the active deployment with its scenario, namespace, Confirm it matches what you see in Elastic Serverless.
-
-You can also run:
-```bash
-demo-status
-```
-
-To see all 9 services (7 with traces, 4 network/infra services with logs only) and their telemetry send rates.
 
 ✅ **Ready to continue when** you've seen logs, traces, or metrics in Elastic Serverless and confirmed services are healthy.

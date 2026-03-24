@@ -90,10 +90,6 @@ notes:
 
     This lab demonstrates that entire journey — in a real Elastic Serverless environment.
 tabs:
-- id: kitqojsoa1co
-  title: Terminal
-  type: terminal
-  hostname: es3-api
 - id: j9eexry1fgmk
   title: Demo App
   type: service

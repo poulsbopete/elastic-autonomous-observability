@@ -65,10 +65,6 @@ notes:
 
     This cascade is what makes observability *hard* in practice — and what makes Elastic's correlated view across logs, metrics, and traces so valuable for incident response.
 tabs:
-- id: evu3zosviiyy
-  title: Terminal
-  type: terminal
-  hostname: es3-api
 - id: u5cmidsfkwal
   title: Demo App
   type: service
@@ -148,13 +144,7 @@ The alert triggers a workflow that calls the AI agent. The agent:
 
 ## Verify the Fault is Active
 
-In the Terminal tab:
-
-```bash
-demo-chaos
-```
-
-You should see the triggered channel with `"state": "ACTIVE"`.
+Back in the **Demo App** tab, the Chaos controller will show your active channel with a red **ACTIVE** badge. You can also confirm in the **Elastic Serverless** tab — the error log stream will show a spike from the affected service within seconds.
 
 ---
 
@@ -183,4 +173,4 @@ You should see the triggered channel with `"state": "ACTIVE"`.
 | 19 | Orphaned Cloud Resource Alert | cloud_ops | GCP |
 | 20 | Cross-Cloud VPN Tunnel Flapping | cloud_ops | GCP |
 
-✅ **Ready to continue when** at least one fault channel is active (verified by `demo-chaos` showing `"active": true`).
+✅ **Ready to continue when** at least one fault channel shows **ACTIVE** in the Demo App Chaos controller.

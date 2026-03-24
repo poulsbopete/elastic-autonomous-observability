@@ -84,10 +84,6 @@ notes:
 
     All 9 services emit **logs, metrics, and traces** via OTLP to a single Elastic Serverless Observability project — giving you a unified view across clouds without any Collector infrastructure.
 tabs:
-- id: wpzfu4koymhw
-  title: Terminal
-  type: terminal
-  hostname: es3-api
 - id: f0jcpawmyzuq
   title: Demo App
   type: service
@@ -125,12 +121,6 @@ The demo platform is already running on this VM and has been pre-configured with
 ## Step 1 — Verify the Deployment is Running
 
 Open the **Demo App** tab. You should see the Fanatics Live scenario already deployed and sending telemetry. If the deployment bar is still in progress, wait a moment for it to complete.
-
-You can also confirm in the **Terminal** tab:
-
-```bash
-demo-deployments
-```
 
 ---
 
