@@ -140,7 +140,7 @@ steps:
       path: /api/observability/slos
       body:
         name: Error Rate SLO
-        description: Automatically created SLO for service error rate - < 5% target, grouped by service name
+        description: Automatically created SLO for service error rate - less than 5% error rate target, grouped by service name
         indicator:
           type: sli.kql.custom
           params:
