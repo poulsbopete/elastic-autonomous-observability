@@ -549,6 +549,29 @@ server {
     # Remove X-Frame-Options to allow iframe embedding
     # (or we could set it to empty, but removing is cleaner)
   }
+  location /metric-bot {
+    proxy_pass https://metric-bot.vercel.app/;
+    proxy_set_header Host metric-bot.vercel.app;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto $scheme;
+    proxy_ssl_verify off;
+    add_header Access-Control-Allow-Origin "*" always;
+    add_header Access-Control-Allow-Methods "GET, POST, OPTIONS" always;
+    add_header Access-Control-Allow-Headers "Content-Type, Authorization" always;
+    # Remove X-Frame-Options to allow embedding
+    proxy_hide_header X-Frame-Options;
+    
+    # Handle CORS preflight
+    if ($request_method = OPTIONS) {
+      add_header Access-Control-Allow-Origin "*";
+      add_header Access-Control-Allow-Methods "GET, POST, OPTIONS";
+      add_header Access-Control-Allow-Headers "Content-Type, Authorization";
+      add_header Content-Length 0;
+      add_header Content-Type text/plain;
+      return 204;
+    }
+  }
   location /mcp-proxy {
     proxy_pass https://ai-assistants-ffcafb.kb.us-east-1.aws.elastic.cloud/api/agent_builder/mcp;
     proxy_set_header Authorization "ApiKey SFBCQzlac0JBUENqajRQVTJ5VTM6WjRmYnhvWF9hdnM3aXNMZEpFUWlmZw==";
@@ -684,3 +707,139 @@ else
 fi
 
 echo "done"
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Elastic Observability Demo Platform setup
+# Credentials (KIBANA_URL, ELASTICSEARCH_API_KEY) are already set above.
+# The demo app runs on port 8090 (nginx owns 8080).
+# ─────────────────────────────────────────────────────────────────────────────
+
+DEMO_REPO="https://github.com/poulsbopete/elastic-launch-demo.git"
+DEMO_BRANCH="feat/back-navigation-noc-chaos"
+DEMO_DIR="/opt/elastic-launch-demo"
+DEMO_PORT=8090
+
+echo "Cloning elastic-launch-demo..."
+if [[ -d "$DEMO_DIR" ]]; then
+  git -C "$DEMO_DIR" pull --ff-only 2>/dev/null || true
+else
+  git clone --branch "$DEMO_BRANCH" "$DEMO_REPO" "$DEMO_DIR"
+fi
+
+echo "Installing Python dependencies..."
+# Install into a dedicated target dir — avoids PEP 668 / EXTERNALLY-MANAGED entirely
+PKGS_DIR="$DEMO_DIR/packages"
+mkdir -p "$PKGS_DIR"
+# Bootstrap pip into the target dir using get-pip.py (no system pip needed)
+curl -fsSL https://bootstrap.pypa.io/get-pip.py | python3 - --target="$PKGS_DIR" --quiet 2>/dev/null || true
+# Install all requirements into the same target dir
+PYTHONPATH="$PKGS_DIR" python3 -m pip install \
+  --target="$PKGS_DIR" --prefer-binary --quiet \
+  -r "$DEMO_DIR/requirements.txt"
+mkdir -p "$DEMO_DIR/data"
+
+# Get Instruqt participant email to pre-fill the Chaos Controller operator field.
+# Falls back to a stub so OPERATOR_EMAIL is always set and nothing downstream fails.
+PARTICIPANT_EMAIL=""
+if command -v instruqt &>/dev/null; then
+  PARTICIPANT_EMAIL="$(instruqt participant get --format json 2>/dev/null \
+    | python3 -c "import sys,json; p=json.load(sys.stdin); print(p.get('email',''))" \
+    2>/dev/null || echo "")"
+fi
+if [[ -z "$PARTICIPANT_EMAIL" ]]; then
+  # Fallback: try the runtime socket
+  PARTICIPANT_EMAIL="$(curl -sf --unix-socket /var/run/instruqt/runtime.sock \
+    http://localhost/participant 2>/dev/null \
+    | python3 -c "import sys,json; p=json.load(sys.stdin); print(p.get('email',''))" \
+    2>/dev/null || echo "")"
+fi
+if [[ -z "$PARTICIPANT_EMAIL" ]]; then
+  PARTICIPANT_EMAIL="participant@instruqt.local"
+  echo "Participant email not available — using stub: $PARTICIPANT_EMAIL"
+else
+  echo "Participant email resolved: $PARTICIPANT_EMAIL"
+fi
+
+echo "Creating systemd service for demo app (port $DEMO_PORT)..."
+cat > /etc/systemd/system/elastic-demo.service <<EOF
+[Unit]
+Description=Elastic Observability Demo Platform
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=${DEMO_DIR}
+Environment=PATH=${DEMO_DIR}/packages/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+Environment=PYTHONPATH=${DEMO_DIR}/packages
+Environment=OPERATOR_EMAIL=${PARTICIPANT_EMAIL}
+ExecStart=/usr/bin/python3 -m uvicorn app.main:app --host 0.0.0.0 --port ${DEMO_PORT}
+Restart=on-failure
+RestartSec=5
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=elastic-demo
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+systemctl daemon-reload
+systemctl enable elastic-demo
+systemctl start  elastic-demo
+
+echo "Waiting for demo app to become healthy on port $DEMO_PORT..."
+for i in $(seq 1 60); do
+  if curl -sf "http://localhost:${DEMO_PORT}/health" >/dev/null 2>&1; then
+    echo "Demo app healthy after ${i}s ✓"
+    break
+  fi
+  if [[ $i -eq 60 ]]; then
+    echo "WARN: Demo app did not become healthy after 60s"
+  fi
+  sleep 1
+done
+
+# Credentials are already exported by the project-creation block above.
+# KIBANA_URL and ELASTICSEARCH_API_KEY are set as env vars in this script.
+DEMO_KIBANA_URL="${KIBANA_URL:-}"
+DEMO_API_KEY="${ELASTICSEARCH_API_KEY:-}"
+
+if [[ -n "$DEMO_KIBANA_URL" && -n "$DEMO_API_KEY" ]]; then
+  echo "Launching fanatics scenario against $DEMO_KIBANA_URL ..."
+
+  curl -sf -X POST "http://localhost:${DEMO_PORT}/api/setup/launch" \
+    -H 'Content-Type: application/json' \
+    -d "{\"scenario_id\":\"fanatics\",\"kibana_url\":\"${DEMO_KIBANA_URL}\",\"api_key\":\"${DEMO_API_KEY}\"}" \
+    >/dev/null 2>&1 || echo "WARN: Launch request failed — learners can launch manually via the Demo App tab."
+
+  echo "Waiting for deployment to register..."
+  for i in $(seq 1 120); do
+    RUNNING="$(curl -sf "http://localhost:${DEMO_PORT}/api/deployments" 2>/dev/null \
+      | python3 -c "import sys,json; deps=json.load(sys.stdin); print(sum(1 for d in deps if d.get('running')))" 2>/dev/null || echo 0)"
+    if [[ "$RUNNING" -ge 1 ]]; then
+      echo "Deployment active after ${i}s ✓"
+      break
+    fi
+    if [[ $i -eq 120 ]]; then
+      echo "WARN: Deployment did not register after 240s"
+    fi
+    sleep 2
+  done
+else
+  echo "WARN: Missing Kibana URL or API key — skipping auto-launch."
+fi
+
+# Convenience aliases
+cat >> /root/.bashrc <<'BASH'
+
+# Elastic Demo aliases
+alias demo-logs="journalctl -u elastic-demo -f --no-pager"
+alias demo-status="curl -sf http://localhost:8090/api/status | python3 -m json.tool"
+alias demo-deployments="curl -sf http://localhost:8090/api/deployments | python3 -m json.tool"
+alias demo-chaos="curl -sf http://localhost:8090/api/chaos/status | python3 -m json.tool"
+alias demo-restart="systemctl restart elastic-demo && sleep 3 && curl -sf http://localhost:8090/health"
+BASH
+
+echo "Track setup complete."

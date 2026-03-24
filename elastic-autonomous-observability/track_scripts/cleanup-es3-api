@@ -15,12 +15,19 @@ if [ -z "${DEPLOYMENT_ID:-}" ] || [ "$DEPLOYMENT_ID" = "" ]; then
     exit 0
 fi
 
-# Check for API key
+# Check for API key — map ESS_CLOUD_API_KEY (our secret name) if needed
 if [ -z "${PME_CLOUD_INSTRUQT_API_KEY:-}" ]; then
-    echo "WARNING: PME_CLOUD_INSTRUQT_API_KEY not set"
+    PME_CLOUD_INSTRUQT_API_KEY="${ESS_CLOUD_API_KEY:-}"
+fi
+if [ -z "${PME_CLOUD_INSTRUQT_API_KEY:-}" ]; then
+    PME_CLOUD_INSTRUQT_API_KEY=$(agent variable get ESS_CLOUD_API_KEY 2>/dev/null || echo "")
+fi
+if [ -z "${PME_CLOUD_INSTRUQT_API_KEY:-}" ]; then
+    echo "WARNING: PME_CLOUD_INSTRUQT_API_KEY / ESS_CLOUD_API_KEY not set"
     echo "Cannot delete project without API key"
     exit 0
 fi
+export PME_CLOUD_INSTRUQT_API_KEY
 
 python3 bin/es3-api.py \
    --operation delete \

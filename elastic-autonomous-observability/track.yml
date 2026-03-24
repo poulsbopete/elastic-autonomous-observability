@@ -1,27 +1,35 @@
 slug: elastic-autonomous-observability
 id: tednx0xvsfit
 title: Elastic Autonomous Observability
-teaser: Send logs, metrics, and traces via OpenTelemetry to Elastic Serverless and
-  learn signal correlation, latency investigation, and cost optimization.
-description: |
-  A hands-on workshop for engineers who want to observe microservices using OpenTelemetry
-  and Elastic Serverless. You will configure the OTLP collector, send logs, metrics, and traces,
-  correlate signals across services, investigate latency and failures, reduce cardinality for cost,
-  and use the AI assistant for troubleshooting. Data understanding and investigation—not deployment.
-icon: https://cdn.instruqt.com/assets/templates/ubuntu.png
+teaser: Connect real OpenTelemetry telemetry, inject faults, and watch Elastic's AI
+  agent investigate and auto-remediate — all without writing a single query.
+description: |-
+  Experience Elastic's full Autonomous Observability story from end to end.
+
+  A multi-cloud demo platform simulates 9 microservices across AWS, GCP, and Azure — emitting real OpenTelemetry logs, metrics, and traces into Elastic Cloud. You'll inject realistic faults through a chaos controller, watch Elastic detect them via ES|QL rules and AI-powered analysis, and witness automated remediation workflows close the loop — from alert to root cause to fix — with no human intervention required.
+
+  **What you'll do:**
+  - Connect a live OTLP telemetry stream to Elastic Cloud
+  - Deploy 9 simulated microservices with a single click
+  - Trigger multi-cloud fault channels from a chaos controller UI
+  - Watch an AI agent investigate anomalies and run auto-remediation workflows
+
+  **Time:** ~45 minutes
+icon: ""
 tags:
-- elastic
+- co.elastic.workshops.production
+- ai
 - opentelemetry
-- serverless
 - observability
+- co.elastic.workshops.production.autonomous-observability
+- co.elastic.workshops
 owner: elastic
 developers:
 - peter.simkins@elastic.co
-show_timer: true
-skipping_enabled: true
-idle_timeout: 600
-timelimit: 7200
+idle_timeout: 3600
+timelimit: 10800
 lab_config:
+  extend_ttl: 3600
   sidebar_enabled: true
   feedback_recap_enabled: true
   feedback_tab_enabled: false
@@ -30,5 +38,5 @@ lab_config:
     name: modern-dark
   override_challenge_layout: false
   hideStopButton: false
-checksum: "9698752779279914090"
+checksum: "5652961186802297191"
 enhanced_loading: false
