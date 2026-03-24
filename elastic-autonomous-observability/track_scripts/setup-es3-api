@@ -863,7 +863,7 @@ create_slo() {
 
 create_slo "Availability SLO" '{
   "name": "Availability SLO",
-  "description": "Service availability - 95% target, grouped by service name",
+  "description": "Service availability - 70% target (relaxed), grouped by service name",
   "indicator": {
     "type": "sli.kql.custom",
     "params": {
@@ -877,13 +877,13 @@ create_slo "Availability SLO" '{
   "groupBy": "service.name",
   "budgetingMethod": "occurrences",
   "timeWindow": { "duration": "7d", "type": "rolling" },
-  "objective": { "target": 0.95 },
+  "objective": { "target": 0.70 },
   "tags": ["auto-created"]
 }'
 
 create_slo "Latency SLO" '{
   "name": "Latency SLO",
-  "description": "Service latency - 85% of requests under 2s, grouped by service name",
+  "description": "Service latency - 60% of requests under 2s (relaxed), grouped by service name",
   "indicator": {
     "type": "sli.kql.custom",
     "params": {
@@ -897,13 +897,13 @@ create_slo "Latency SLO" '{
   "groupBy": "service.name",
   "budgetingMethod": "occurrences",
   "timeWindow": { "duration": "7d", "type": "rolling" },
-  "objective": { "target": 0.85 },
+  "objective": { "target": 0.60 },
   "tags": ["auto-created"]
 }'
 
 create_slo "Error Rate SLO" '{
   "name": "Error Rate SLO",
-  "description": "Service error rate - less than 5% errors, grouped by service name",
+  "description": "Service error rate - 70% success rate (relaxed), grouped by service name",
   "indicator": {
     "type": "sli.kql.custom",
     "params": {
@@ -917,7 +917,7 @@ create_slo "Error Rate SLO" '{
   "groupBy": "service.name",
   "budgetingMethod": "occurrences",
   "timeWindow": { "duration": "7d", "type": "rolling" },
-  "objective": { "target": 0.95 },
+  "objective": { "target": 0.70 },
   "tags": ["auto-created"]
 }'
 
@@ -1263,9 +1263,19 @@ fi
 if [[ "$SLO_WORKFLOW_RESPONSE" == "200" || "$SLO_WORKFLOW_RESPONSE" == "201" ]]; then
   echo "✅ SLO Management workflow created successfully (HTTP $SLO_WORKFLOW_RESPONSE)"
 else
-  echo "⚠️  SLO Management workflow creation returned HTTP $SLO_WORKFLOW_RESPONSE"
+  echo "⚠️  All workflow API attempts failed (HTTP $SLO_WORKFLOW_RESPONSE)"
   echo "Final response: $(cat /tmp/slo_workflow_response.json 2>/dev/null || echo 'no response body')"
-  echo "The track will continue — SLOs are created directly above; workflow can be imported manually via Observability → Workflows → Import"
+
+  # Attempt 3: Try demo app's internal workflow creation if available
+  echo "Workflow API attempt 3 (demo app relay)..."
+  DEMO_WF_RESPONSE=$(curl -s -o /tmp/slo_wf_demo.json -w "%{http_code}" \
+    -X POST "http://localhost:8090/api/workflows/create" \
+    -H 'Content-Type: application/yaml' \
+    --data-binary @/tmp/slo_workflow.yaml 2>/dev/null) || DEMO_WF_RESPONSE="000"
+  echo "Demo app relay: HTTP $DEMO_WF_RESPONSE — $(cat /tmp/slo_wf_demo.json 2>/dev/null)"
+
+  echo "SLOs are created directly and will refresh on the next 24h cycle."
+  echo "Workflow YAML is available at /tmp/slo_workflow.yaml for manual import via Observability → Workflows → Import"
 fi
 
 echo "Track setup complete."
