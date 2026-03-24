@@ -72,6 +72,13 @@ notes:
     ```
 
     **AI Workflows** connect alert detection to investigation to remediation — all without human intervention.
+- type: text
+  contents: |
+    ## While You Wait — Play a Game! 🎮
+
+    Setup takes a few minutes. Pass the time with Vampire Clone:
+
+    <iframe src="https://poulsbopete.github.io/Vampire-Clone/" width="100%" height="550" frameborder="0" allowfullscreen style="border-radius:8px;"></iframe>
 tabs:
 - id: f0jcpawmyzuq
   title: Demo App
