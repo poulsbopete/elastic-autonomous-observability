@@ -70,9 +70,11 @@ notes:
     Humans shift from **doing** to **reviewing** — approving outcomes, not debugging incidents.
 - type: text
   contents: |
-    ## While You Wait...
+    ## While You Wait — Play a Game! 🎮
 
-    <iframe src="https://poulsbopete.github.io/Vampire-Clone/" width="100%" height="600" frameborder="0" allowfullscreen></iframe>
+    While your environment loads, open the **Vampire Clone** tab and survive as long as you can.
+
+    The game opens automatically in the next tab — use **WASD** or arrow keys to move, avoid enemies, and collect power-ups. Good luck!
 tabs:
 - id: j9eexry1fgmk
   title: Demo App
@@ -80,6 +82,10 @@ tabs:
   hostname: es3-api
   path: /
   port: 8090
+- id: vampire-clone-game
+  title: 🎮 Vampire Clone
+  type: website
+  url: https://poulsbopete.github.io/Vampire-Clone/
 - id: 7zyo0vkzoic6
   title: Elastic Serverless
   type: service
