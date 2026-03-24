@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Challenge 3 check: verify at least one Kibana case was auto-created by the workflow.
+# Challenge 3 check: verify the demo app is running and a fault was injected.
 
 APP="http://localhost:8090"
 
@@ -11,42 +11,30 @@ fi
 
 # ── At least one deployment exists ───────────────────────────────────────────
 DEPS="$(curl -sf "${APP}/api/deployments" 2>/dev/null)" || DEPS="[]"
-DEP_COUNT="$(echo "$DEPS" | python3 -c "import sys,json; d=json.load(sys.stdin); print(len([x for x in d if x.get('running')]))" 2>/dev/null)" || DEP_COUNT="0"
+DEP_COUNT="$(echo "$DEPS" | python3 -c "
+import sys, json
+try:
+    d = json.load(sys.stdin)
+    print(len([x for x in d if x.get('running')]))
+except:
+    print(0)
+" 2>/dev/null)" || DEP_COUNT="0"
 
-if [[ "$DEP_COUNT" == "0" ]]; then
+if [[ "${DEP_COUNT:-0}" == "0" ]]; then
   echo "FAIL: No active deployment found. Make sure the Fanatics scenario launched in Challenge 1."
   exit 1
 fi
 
-# ── Get credentials from agent variables ─────────────────────────────────────
-ES_PASS="$(agent variable get ES_PASSWORD 2>/dev/null || echo "")"
-ES_URL_VAR="$(agent variable get ES_URL 2>/dev/null || echo "")"
+# ── At least one fault was injected (active OR previously resolved) ───────────
+DEP_ID="$(echo "$DEPS" | python3 -c "
+import sys, json
+try:
+    d = json.load(sys.stdin)
+    print(d[0].get('deployment_id', '') if d else '')
+except:
+    print('')
+" 2>/dev/null)" || DEP_ID=""
 
-# ── Query Elasticsearch for cases ────────────────────────────────────────────
-# Cases are indexed in .kibana* / .cases* in Elasticsearch
-if [[ -n "$ES_PASS" && -n "$ES_URL_VAR" ]]; then
-  CASE_COUNT="$(curl -sf \
-    "${ES_URL_VAR}/.cases*/_count" \
-    -u "admin:${ES_PASS}" \
-    -H 'Content-Type: application/json' \
-    -d '{"query":{"match_all":{}}}' 2>/dev/null \
-    | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('count',0))" 2>/dev/null)" || CASE_COUNT="0"
-else
-  # Fallback: try the local nginx proxy (port 8080) without auth — nginx injects it
-  CASE_COUNT="$(curl -sf --max-time 10 \
-    "http://localhost:8080/api/cases/_find?perPage=1" \
-    -H 'kbn-xsrf: true' 2>/dev/null \
-    | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('total',0))" 2>/dev/null)" || CASE_COUNT="0"
-fi
-
-if [[ "${CASE_COUNT:-0}" -gt 0 ]] 2>/dev/null; then
-  echo "PASS: ${CASE_COUNT} case(s) found — the workflow ran and the AI agent created a case. Ready to continue!"
-  exit 0
-fi
-
-# ── Fallback: check if at least one chaos channel was triggered ───────────────
-# A triggered fault (even if resolved) means the workflow had a chance to run
-DEP_ID="$(echo "$DEPS" | python3 -c "import sys,json; d=json.load(sys.stdin); print(d[0].get('deployment_id','') if d else '')" 2>/dev/null)" || DEP_ID=""
 CHAOS_URL="${APP}/api/chaos/status"
 [[ -n "$DEP_ID" ]] && CHAOS_URL="${APP}/api/chaos/status?deployment_id=${DEP_ID}"
 CHAOS="$(curl -sf "$CHAOS_URL" 2>/dev/null)" || CHAOS="{}"
@@ -55,16 +43,17 @@ ANY_TRIGGERED="$(echo "$CHAOS" | python3 -c "
 import sys, json
 try:
     ch = json.load(sys.stdin)
-    found = [k for k,v in ch.items() if isinstance(v,dict) and v.get('state') in ('ACTIVE','RESOLVED')]
+    # Accept any channel that was ever triggered
+    found = [k for k,v in ch.items() if isinstance(v, dict) and v.get('state','') not in ('', 'STANDBY', 'INACTIVE')]
     print(len(found))
-except Exception:
+except:
     print(0)
 " 2>/dev/null)" || ANY_TRIGGERED="0"
 
-if [[ "${ANY_TRIGGERED:-0}" -gt 0 ]] 2>/dev/null; then
-  echo "PASS: Fault injected and workflow triggered. Check Observability → Cases to see the auto-created case."
+if [[ "${ANY_TRIGGERED:-0}" -gt 0 ]]; then
+  echo "PASS: Fault injected and detected. Check Observability → Cases and Workflows to see the AI agent's response."
   exit 0
 fi
 
-echo "FAIL: No cases found yet. Inject a fault from the Demo App → Chaos link, wait ~2 minutes, then check Observability → Cases."
+echo "FAIL: No fault channels have been triggered yet. Open the Demo App tab, click the Chaos link next to your deployment, and inject any fault channel."
 exit 1
