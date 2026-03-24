@@ -172,15 +172,7 @@ FROM logs*
 
 ---
 
-## Explore #4 — Dashboards
-
-The deployer created an **Executive Dashboard** pre-configured for your scenario. Find it in:
-
-**Elastic Serverless** tab → **Dashboards** → search "Fanatics" (or "Executive")
-
----
-
-## Explore #5 — ES|QL Time Series Queries
+## Explore #4 — ES|QL Time Series Queries
 
 In the **Elastic Serverless** tab → **Discover** → **ES|QL** mode, try these queries against the live metrics stream.
 
@@ -259,5 +251,13 @@ FROM logs*
 ```
 
 > **Tip:** After triggering a chaos fault in the next challenge, re-run this query to watch the error count spike for the affected service in real time — while healthy services stay flat.
+
+---
+
+## Explore #5 — Dashboards
+
+The deployer created an **Executive Dashboard** pre-configured for your scenario. Find it in:
+
+**Elastic Serverless** tab → **Dashboards** → search "Fanatics" (or "Executive")
 
 ✅ **Ready to continue when** you've seen logs, traces, or metrics in Elastic Serverless and confirmed services are healthy.
