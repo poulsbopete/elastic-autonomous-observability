@@ -72,7 +72,7 @@ tabs:
   title: Demo App
   type: service
   hostname: es3-api
-  path: /landing
+  path: /
   port: 8090
 - id: lab03dash01
   title: Live Dashboard
@@ -114,9 +114,8 @@ Trigger a fault from the **Demo App**, then watch Elastic automatically investig
 
 ## Step 1 — Inject a Fault
 
-1. Open the **Demo App** tab
-2. Find your running **Fanatics Collectibles** deployment and click the **Chaos** link
-3. Select any fault channel and click **Inject Fault**
+1. Open the **Chaos Controller** tab
+2. Select any fault channel and click **Inject Fault**
 
 > **Recommended:** Start with **Channel 12 — Auction Bid Latency Spike** for the clearest end-to-end demo.
 

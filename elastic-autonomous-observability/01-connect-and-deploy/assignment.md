@@ -84,7 +84,7 @@ tabs:
   title: Demo App
   type: service
   hostname: es3-api
-  path: /landing
+  path: /
   port: 8090
 - id: fanaticsdash01
   title: Live Dashboard
@@ -130,7 +130,7 @@ Use the three Demo App tabs to explore the running scenario:
 
 | Tab | What you'll see |
 |-----|----------------|
-| **Demo App** | Landing page — scenario overview and deployment status |
+| **Demo App** | Scenario selector — overview and deployment status |
 | **Live Dashboard** | Real-time service health across all 9 microservices |
 | **Chaos Controller** | 20 fault channels ready to inject — you'll use this in Lab 3 |
 

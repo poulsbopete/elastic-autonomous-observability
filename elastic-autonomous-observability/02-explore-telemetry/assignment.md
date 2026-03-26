@@ -74,7 +74,7 @@ tabs:
   title: Demo App
   type: service
   hostname: es3-api
-  path: /landing
+  path: /
   port: 8090
 - id: lab02dash01
   title: Live Dashboard
