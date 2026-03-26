@@ -108,17 +108,31 @@ Trigger a fault from the **Demo App**, then watch Elastic automatically investig
 
 > **Recommended:** Start with **Channel 12 — Auction Bid Latency Spike** for the clearest end-to-end demo.
 
+While the fault propagates, run this query in **Elastic Serverless → Discover → ES|QL** to watch the error spike in real time:
+
+```esql
+FROM logs*
+| WHERE @timestamp > NOW() - 15 MINUTES
+| WHERE severity_text == "ERROR"
+| STATS errors = COUNT(*) BY service.name
+| SORT errors DESC
+```
+
+> **Tip:** Re-run this every 30 seconds after injecting the fault — you'll see the affected service's error count climb while all other services stay flat.
+
 ---
 
 ## Step 2 — Watch the Workflow Run
 
 In the **Elastic Serverless** tab, go to **Observability → Workflows**.
 
-Within 1–2 minutes of injecting the fault, you'll see the **Fanatics Collectibles Significant Event Notification** workflow show a recent execution. Click it to see each step:
+Within 1–2 minutes of injecting the fault, the **Fanatics Collectibles Significant Event Notification** workflow will show a recent execution. Click it to see each step:
 
 - **count_errors** — ES|QL query counting recent errors from the affected service
 - **run_rca** — AI agent root-cause analysis
 - **create_case** — Kibana case created with RCA findings
+
+Click **View Full Conversation** to open the AI agent's complete chat thread — you can see exactly what it queried, what it found, and why it drew its conclusions. You can even type follow-up questions or ask the agent to take a remediation action.
 
 ---
 

@@ -84,7 +84,19 @@ tabs:
   title: Demo App
   type: service
   hostname: es3-api
-  path: /
+  path: /landing
+  port: 8090
+- id: fanaticsdash01
+  title: Live Dashboard
+  type: service
+  hostname: es3-api
+  path: /dashboard
+  port: 8090
+- id: fanatchaos01
+  title: Chaos Controller
+  type: service
+  hostname: es3-api
+  path: /chaos
   port: 8090
 - id: dz2mxkupn9oy
   title: Elastic Serverless
@@ -108,50 +120,45 @@ enhanced_loading: null
 
 # Connect to Elastic Cloud & Deploy
 
-Your Elastic Cloud Serverless Observability project was **automatically provisioned** when this lab started — open the **Elastic Serverless** tab directly. No login required.
-
-The demo platform is already running on this VM and has been pre-configured with your project's credentials.
+Everything was **automatically provisioned** when this lab started — your Elastic Cloud project is live, 9 microservices are sending telemetry, and the AI observability stack is configured. Nothing to set up.
 
 ---
 
-## Step 1 — Verify the Deployment is Running
+## Explore the Demo App
 
-Open the **Demo App** tab. You should see the Fanatics Live scenario already deployed and sending telemetry. If the deployment bar is still in progress, wait a moment for it to complete.
+Use the three Demo App tabs to explore the running scenario:
 
----
-
-## Step 2 — Explore the Demo App
-
-The Demo App is your control panel for this lab. From here you can:
-
-- **View the live dashboard** — real-time service health across all 9 microservices
-- **Open the Chaos Controller** — inject and resolve fault channels
-- **Monitor deployment status** — see all active Elastic resources
+| Tab | What you'll see |
+|-----|----------------|
+| **Demo App** | Landing page — scenario overview and deployment status |
+| **Live Dashboard** | Real-time service health across all 9 microservices |
+| **Chaos Controller** | 20 fault channels ready to inject — you'll use this in Lab 3 |
 
 ---
 
-## Step 3 — Open Elastic Serverless
+## Explore Elastic Serverless
 
-Click the **Elastic Serverless** tab. This opens your auto-provisioned Observability project, pre-logged in. Navigate to:
+Click the **Elastic Serverless** tab — you're already logged in. Navigate to:
 
-- **Discover → ES|QL** — query live logs from services like `auction-engine`, `card-printing-system`, `digital-marketplace`
-- **Applications → Service inventory** — distributed traces from 7 services (4 network services are logs-only)
+- **Discover → ES|QL** — query live logs from `auction-engine`, `card-printing-system`, `digital-marketplace`, and more
+- **Applications → Service inventory** — distributed traces from 7 services
 - **Observability → Infrastructure** — 3 simulated hosts (AWS, GCP, Azure)
+- **Observability → SLOs** — 21 auto-created SLOs, one per service per signal type
+- **Observability → Workflows** — 4 pre-configured AI response workflows
 
-> **Tip:** Set the time range to **Last 15 minutes** to see recent telemetry.
+> **Tip:** Set the time range to **Last 15 minutes** to see the freshest data.
 
 ---
 
-## What was auto-deployed
-
-The track setup automatically provisioned the full observability stack in your Elastic project:
+## What Was Auto-Deployed
 
 | Resource | Details |
 |----------|---------|
-| Alert rules | 20 ES\|QL rules — one per fault channel |
+| Alert rules | 20 ES\|QL rules — one per fault channel, 30s interval |
 | AI agent | Investigation tools + system prompt |
-| Workflows | Alert → investigate → remediate → notify |
-| Dashboards | Executive dashboard + OTel dashboards |
+| Workflows | Alert → investigate → create case → remediate |
+| Dashboards | Executive dashboard + OTel signal dashboards |
+| SLOs | 21 SLOs auto-created across all services |
 | Data views | `logs.otel`, `logs.otel.*`, `metrics-*` |
 
-✅ **You're ready for the next challenge when** you can see logs or services in the Elastic Serverless tab.
+✅ **You're ready for the next challenge when** you can see logs, services, or SLOs in the Elastic Serverless tab.
