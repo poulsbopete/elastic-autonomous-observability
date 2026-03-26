@@ -74,7 +74,19 @@ tabs:
   title: Demo App
   type: service
   hostname: es3-api
-  path: /
+  path: /landing
+  port: 8090
+- id: lab02dash01
+  title: Live Dashboard
+  type: service
+  hostname: es3-api
+  path: /dashboard
+  port: 8090
+- id: lab02chaos01
+  title: Chaos Controller
+  type: service
+  hostname: es3-api
+  path: /chaos
   port: 8090
 - id: f0kedcdtykyx
   title: Elastic Serverless
