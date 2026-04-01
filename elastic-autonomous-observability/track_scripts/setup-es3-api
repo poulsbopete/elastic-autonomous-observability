@@ -870,6 +870,30 @@ if [[ -n "$DEMO_KIBANA_URL" && -n "$DEMO_API_KEY" ]]; then
     sleep 2
   done
 
+  # Dump deployer progress + workflow logs for diagnostics
+  if [[ "$DEPLOYED" -eq 1 ]]; then
+    echo "=== Deployment progress ==="
+    curl -sf "http://localhost:${DEMO_PORT}/api/setup/progress" 2>/dev/null \
+      | python3 -c "
+import sys, json
+try:
+    p = json.load(sys.stdin)
+    for s in p.get('steps', []):
+        print(f'  [{s.get(\"status\",\"?\")}] {s.get(\"name\",\"?\")} — {s.get(\"detail\",\"\")}')
+except: print('  (could not parse progress)')
+" 2>/dev/null || true
+
+    echo "=== Workflow-related demo app logs ==="
+    journalctl -u elastic-demo --no-pager -n 200 2>/dev/null \
+      | grep -i "workflow" | tail -20 || true
+    echo "=== Direct Kibana workflows API test ==="
+    curl -s -o /tmp/wf_list_test.json -w "GET /api/workflows: HTTP %{http_code}\n" \
+      -H "Authorization: ApiKey ${DEMO_API_KEY}" \
+      -H "kbn-xsrf: true" \
+      "${DEMO_KIBANA_URL}/api/workflows?page=1&size=5" 2>/dev/null || true
+    echo "Response: $(cat /tmp/wf_list_test.json 2>/dev/null | head -c 500)"
+  fi
+
   # Verify workflows were actually created; retry once if missing
   if [[ "$DEPLOYED" -eq 1 ]]; then
     echo "Checking workflows were created..."
