@@ -807,17 +807,37 @@ DEMO_KIBANA_URL="${KIBANA_URL:-}"
 DEMO_API_KEY="${ELASTICSEARCH_API_KEY:-}"
 
 _count_workflows() {
-  curl -sf -H "Authorization: ApiKey ${DEMO_API_KEY}" \
+  # Try GET /api/workflows first (Kibana 9.4+), fall back to POST /api/workflows/search
+  local count=0
+  local raw
+  raw=$(curl -s -H "Authorization: ApiKey ${DEMO_API_KEY}" \
     -H "kbn-xsrf: true" \
-    "${DEMO_KIBANA_URL}/api/workflows" 2>/dev/null \
-  | python3 -c "
+    "${DEMO_KIBANA_URL}/api/workflows?page=1&size=100" 2>/dev/null)
+  count=$(echo "$raw" | python3 -c "
 import sys, json
 try:
     d = json.load(sys.stdin)
     if isinstance(d, list): print(len(d))
-    else: print(len(d.get('data', d.get('results', []))))
+    else: print(len(d.get('data', d.get('results', d.get('items', [])))))
 except: print(0)
-" 2>/dev/null || echo 0
+" 2>/dev/null || echo 0)
+  if [[ "${count:-0}" -lt 1 ]]; then
+    raw=$(curl -s -X POST \
+      -H "Authorization: ApiKey ${DEMO_API_KEY}" \
+      -H "kbn-xsrf: true" \
+      -H "Content-Type: application/json" \
+      -d '{"page":1,"size":100}' \
+      "${DEMO_KIBANA_URL}/api/workflows/search" 2>/dev/null)
+    count=$(echo "$raw" | python3 -c "
+import sys, json
+try:
+    d = json.load(sys.stdin)
+    if isinstance(d, list): print(len(d))
+    else: print(len(d.get('results', d.get('data', []))))
+except: print(0)
+" 2>/dev/null || echo 0)
+  fi
+  echo "${count:-0}"
 }
 
 _do_launch() {
