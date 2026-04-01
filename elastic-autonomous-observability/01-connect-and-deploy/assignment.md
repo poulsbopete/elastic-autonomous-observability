@@ -73,12 +73,10 @@ notes:
 
     **AI Workflows** connect alert detection to investigation to remediation — all without human intervention.
 - type: text
-  contents: |
-    ## While You Wait — Play O11y Survivors! 🎮
-
-    Setup takes a few minutes. Survive the anomaly storm while Elastic provisions your environment:
-
-    <iframe src="https://poulsbopete.github.io/Vampire-Clone/" width="100%" height="800" frameborder="0" allowfullscreen style="border-radius:8px;display:block;"></iframe>
+  contents: "## While You Wait — Play O11y Survivors! \U0001F3AE\n\nSetup takes a
+    few minutes. Survive the anomaly storm while Elastic provisions your environment:\n\n<iframe
+    src=\"https://poulsbopete.github.io/Vampire-Clone/\" width=\"100%\" height=\"800\"
+    frameborder=\"0\" allowfullscreen style=\"border-radius:8px;display:block;\"></iframe>\n"
 tabs:
 - id: f0jcpawmyzuq
   title: Demo App
@@ -86,13 +84,13 @@ tabs:
   hostname: es3-api
   path: /
   port: 8090
-- id: fanaticsdash01
+- id: psndlghpu8vz
   title: Live Dashboard
   type: service
   hostname: es3-api
   path: /dashboard
   port: 8090
-- id: fanatchaos01
+- id: fcgypzb3jfps
   title: Chaos Controller
   type: service
   hostname: es3-api

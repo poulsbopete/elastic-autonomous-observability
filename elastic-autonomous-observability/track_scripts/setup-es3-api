@@ -141,30 +141,30 @@ BASE64=$(echo -n "admin:${ELASTICSEARCH_PASSWORD}" | base64)
 KIBANA_URL_WITHOUT_PROTOCOL=$(echo $KIBANA_URL | sed -e 's#http[s]\?://##g')
 
 
-echo "Generating API Key"
-output=$(curl -X POST -s -u "admin:${ELASTICSEARCH_PASSWORD}" \
-  -w "\n%{http_code}" \
-  $ES_URL/_security/api_key \
-  -H 'Content-Type: application/json' \
-  -d '{"name": "collector"}')
+echo "Generating API Key (with retries)..."
+ELASTICSEARCH_API_KEY=""
+for _api_attempt in 1 2 3 4 5; do
+  output=$(curl -X POST -s --max-time 60 \
+    -u "admin:${ELASTICSEARCH_PASSWORD}" \
+    -w "\n%{http_code}" \
+    "$ES_URL/_security/api_key" \
+    -H 'Content-Type: application/json' \
+    -d '{"name": "collector"}' 2>/dev/null || echo -e "\n000")
+  http_code=$(echo "$output" | tail -n1)
+  response_body=$(echo "$output" | sed '$d')
+  if [ "$http_code" = "200" ]; then
+    ELASTICSEARCH_API_KEY=$(echo "$response_body" | jq -r '.encoded // empty')
+    if [ -n "$ELASTICSEARCH_API_KEY" ]; then
+      echo "API Key generated on attempt $_api_attempt"
+      break
+    fi
+  fi
+  echo "API key attempt $_api_attempt failed (HTTP $http_code) — retrying in 15s..."
+  sleep 15
+done
 
-# Extract HTTP status code and response body
-http_code=$(echo "$output" | tail -n1)
-response_body=$(echo "$output" | sed '$d')
-
-# Check if the API call was successful
-if [ "$http_code" != "200" ]; then
-  echo "Error: Failed to generate API key. HTTP status: $http_code"
-  echo "Response: $response_body"
-  #exit 1
-fi
-
-# Extract API key and validate it exists
-ELASTICSEARCH_API_KEY=$(echo "$response_body" | jq -r '.encoded // empty')
 if [ -z "$ELASTICSEARCH_API_KEY" ]; then
-  echo "Error: Failed to extract API key from response"
-  echo "Response: $response_body"
-  #exit 1
+  echo "Error: Failed to generate API key after 5 attempts"
 fi
 
 echo "API Key generated successfully"
@@ -188,7 +188,8 @@ mv /tmp/project_results.json.tmp /tmp/project_results.json
 if [ "$PROJECT_TYPE" = 'observability' ]; then
   echo "Fetching Fleet Server URL"
 
-  fleet_output=$(curl -s -u "admin:$ELASTICSEARCH_PASSWORD" \
+  fleet_output=$(curl -s --max-time 60 \
+    -u "admin:$ELASTICSEARCH_PASSWORD" \
     -w "\n%{http_code}" \
     -H "kbn-xsrf: true" \
     "$KIBANA_URL/api/fleet/fleet_server_hosts")
@@ -810,7 +811,7 @@ _do_launch() {
   local attempt="$1"
   echo "Launch attempt $attempt: launching fanatics scenario against $DEMO_KIBANA_URL ..."
   local http_code
-  http_code=$(curl -s -o /tmp/launch_response.json -w "%{http_code}" \
+  http_code=$(curl -s --max-time 30 -o /tmp/launch_response.json -w "%{http_code}" \
     -X POST "http://localhost:${DEMO_PORT}/api/setup/launch" \
     -H 'Content-Type: application/json' \
     -d "{\"scenario_id\":\"fanatics\",\"kibana_url\":\"${DEMO_KIBANA_URL}\",\"api_key\":\"${DEMO_API_KEY}\"}")
@@ -820,7 +821,7 @@ _do_launch() {
 _count_workflows() {
   # Try new endpoint first (Kibana 9.4+: GET /api/workflows), then legacy search
   local raw count=0
-  raw=$(curl -s -H "Authorization: ApiKey ${DEMO_API_KEY}" -H "kbn-xsrf: true" \
+  raw=$(curl -s --max-time 30 -H "Authorization: ApiKey ${DEMO_API_KEY}" -H "kbn-xsrf: true" \
     "${DEMO_KIBANA_URL}/api/workflows?page=1&size=100" 2>/dev/null)
   count=$(echo "$raw" | python3 -c "
 import sys,json
@@ -829,7 +830,7 @@ try:
     print(len(d) if isinstance(d,list) else len(d.get('data',d.get('results',d.get('items',[])))))
 except: print(0)" 2>/dev/null || echo 0)
   if [[ "${count:-0}" -lt 1 ]]; then
-    raw=$(curl -s -X POST -H "Authorization: ApiKey ${DEMO_API_KEY}" -H "kbn-xsrf: true" \
+    raw=$(curl -s --max-time 30 -X POST -H "Authorization: ApiKey ${DEMO_API_KEY}" -H "kbn-xsrf: true" \
       -H "Content-Type: application/json" -d '{"page":1,"size":100}' \
       "${DEMO_KIBANA_URL}/api/workflows/search" 2>/dev/null)
     count=$(echo "$raw" | python3 -c "
