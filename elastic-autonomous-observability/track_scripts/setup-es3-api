@@ -806,40 +806,6 @@ done
 DEMO_KIBANA_URL="${KIBANA_URL:-}"
 DEMO_API_KEY="${ELASTICSEARCH_API_KEY:-}"
 
-_count_workflows() {
-  # Try GET /api/workflows first (Kibana 9.4+), fall back to POST /api/workflows/search
-  local count=0
-  local raw
-  raw=$(curl -s -H "Authorization: ApiKey ${DEMO_API_KEY}" \
-    -H "kbn-xsrf: true" \
-    "${DEMO_KIBANA_URL}/api/workflows?page=1&size=100" 2>/dev/null)
-  count=$(echo "$raw" | python3 -c "
-import sys, json
-try:
-    d = json.load(sys.stdin)
-    if isinstance(d, list): print(len(d))
-    else: print(len(d.get('data', d.get('results', d.get('items', [])))))
-except: print(0)
-" 2>/dev/null || echo 0)
-  if [[ "${count:-0}" -lt 1 ]]; then
-    raw=$(curl -s -X POST \
-      -H "Authorization: ApiKey ${DEMO_API_KEY}" \
-      -H "kbn-xsrf: true" \
-      -H "Content-Type: application/json" \
-      -d '{"page":1,"size":100}' \
-      "${DEMO_KIBANA_URL}/api/workflows/search" 2>/dev/null)
-    count=$(echo "$raw" | python3 -c "
-import sys, json
-try:
-    d = json.load(sys.stdin)
-    if isinstance(d, list): print(len(d))
-    else: print(len(d.get('results', d.get('data', []))))
-except: print(0)
-" 2>/dev/null || echo 0)
-  fi
-  echo "${count:-0}"
-}
-
 _do_launch() {
   local attempt="$1"
   echo "Launch attempt $attempt: launching fanatics scenario against $DEMO_KIBANA_URL ..."
@@ -848,15 +814,40 @@ _do_launch() {
     -X POST "http://localhost:${DEMO_PORT}/api/setup/launch" \
     -H 'Content-Type: application/json' \
     -d "{\"scenario_id\":\"fanatics\",\"kibana_url\":\"${DEMO_KIBANA_URL}\",\"api_key\":\"${DEMO_API_KEY}\"}")
-  echo "Launch HTTP $http_code — $(cat /tmp/launch_response.json 2>/dev/null | python3 -c 'import sys,json; d=json.load(sys.stdin); print(d.get(\"deployment_id\",d))' 2>/dev/null)"
+  echo "Launch HTTP $http_code — $(cat /tmp/launch_response.json 2>/dev/null | python3 -c 'import sys,json; d=json.load(sys.stdin); print(d.get("deployment_id",d))' 2>/dev/null)"
+}
+
+_count_workflows() {
+  # Try new endpoint first (Kibana 9.4+: GET /api/workflows), then legacy search
+  local raw count=0
+  raw=$(curl -s -H "Authorization: ApiKey ${DEMO_API_KEY}" -H "kbn-xsrf: true" \
+    "${DEMO_KIBANA_URL}/api/workflows?page=1&size=100" 2>/dev/null)
+  count=$(echo "$raw" | python3 -c "
+import sys,json
+try:
+    d=json.load(sys.stdin)
+    print(len(d) if isinstance(d,list) else len(d.get('data',d.get('results',d.get('items',[])))))
+except: print(0)" 2>/dev/null || echo 0)
+  if [[ "${count:-0}" -lt 1 ]]; then
+    raw=$(curl -s -X POST -H "Authorization: ApiKey ${DEMO_API_KEY}" -H "kbn-xsrf: true" \
+      -H "Content-Type: application/json" -d '{"page":1,"size":100}' \
+      "${DEMO_KIBANA_URL}/api/workflows/search" 2>/dev/null)
+    count=$(echo "$raw" | python3 -c "
+import sys,json
+try:
+    d=json.load(sys.stdin)
+    print(len(d) if isinstance(d,list) else len(d.get('results',d.get('data',[]))))
+except: print(0)" 2>/dev/null || echo 0)
+  fi
+  echo "${count:-0}"
 }
 
 if [[ -n "$DEMO_KIBANA_URL" && -n "$DEMO_API_KEY" ]]; then
   _do_launch 1
 
-  echo "Waiting for deployment to register (up to 5 minutes)..."
+  echo "Waiting for deployment to complete (up to 6 minutes)..."
   DEPLOYED=0
-  for i in $(seq 1 150); do
+  for i in $(seq 1 180); do
     RUNNING="$(curl -sf "http://localhost:${DEMO_PORT}/api/deployments" 2>/dev/null \
       | python3 -c "import sys,json; deps=json.load(sys.stdin); print(sum(1 for d in deps if d.get('running')))" 2>/dev/null || echo 0)"
     if [[ "$RUNNING" -ge 1 ]]; then
@@ -864,13 +855,11 @@ if [[ -n "$DEMO_KIBANA_URL" && -n "$DEMO_API_KEY" ]]; then
       DEPLOYED=1
       break
     fi
-    if [[ $i -eq 150 ]]; then
-      echo "WARN: Deployment did not register after 300s"
-    fi
+    [[ $i -eq 180 ]] && echo "WARN: Deployment did not register after 360s"
     sleep 2
   done
 
-  # Dump deployer progress + workflow logs for diagnostics
+  # Log deployment step results
   if [[ "$DEPLOYED" -eq 1 ]]; then
     echo "=== Deployment progress ==="
     curl -sf "http://localhost:${DEMO_PORT}/api/setup/progress" 2>/dev/null \
@@ -882,29 +871,17 @@ try:
         print(f'  [{s.get(\"status\",\"?\")}] {s.get(\"name\",\"?\")} — {s.get(\"detail\",\"\")}')
 except: print('  (could not parse progress)')
 " 2>/dev/null || true
-
-    echo "=== Workflow-related demo app logs ==="
-    journalctl -u elastic-demo --no-pager -n 200 2>/dev/null \
-      | grep -i "workflow" | tail -20 || true
-    echo "=== Direct Kibana workflows API test ==="
-    curl -s -o /tmp/wf_list_test.json -w "GET /api/workflows: HTTP %{http_code}\n" \
-      -H "Authorization: ApiKey ${DEMO_API_KEY}" \
-      -H "kbn-xsrf: true" \
-      "${DEMO_KIBANA_URL}/api/workflows?page=1&size=5" 2>/dev/null || true
-    echo "Response: $(cat /tmp/wf_list_test.json 2>/dev/null | head -c 500)"
   fi
 
-  # Verify workflows were actually created; retry once if missing
+  # Verify workflows; single retry if missing
   if [[ "$DEPLOYED" -eq 1 ]]; then
-    echo "Checking workflows were created..."
-    sleep 10  # Give Kibana a moment to index newly created workflows
+    sleep 5
     WF_COUNT="$(_count_workflows)"
-    echo "Workflow count after deployment: $WF_COUNT"
+    echo "Workflow count: $WF_COUNT"
     if [[ "${WF_COUNT:-0}" -lt 1 ]]; then
-      echo "No workflows found — retrying deployment to recreate them..."
+      echo "No workflows found — retrying launch once..."
       _do_launch 2
-      echo "Waiting 3 minutes for retry deployment..."
-      sleep 180
+      sleep 120
       WF_COUNT="$(_count_workflows)"
       echo "Workflow count after retry: $WF_COUNT"
       if [[ "${WF_COUNT:-0}" -lt 1 ]]; then
@@ -931,440 +908,5 @@ alias demo-chaos="curl -sf http://localhost:8090/api/chaos/status | python3 -m j
 alias demo-restart="systemctl restart elastic-demo && sleep 3 && curl -sf http://localhost:8090/health"
 BASH
 
-echo "Creating SLOs directly via Kibana API..."
-
-create_slo() {
-  local name="$1"
-  local body="$2"
-  local http_code
-  http_code=$(curl -s -o /tmp/slo_response.json -w "%{http_code}" \
-    -X POST "${KIBANA_URL}/api/observability/slos" \
-    -u "admin:${ELASTICSEARCH_PASSWORD}" \
-    -H 'kbn-xsrf: true' \
-    -H 'Content-Type: application/json' \
-    -d "$body")
-  if [[ "$http_code" == "200" || "$http_code" == "201" ]]; then
-    echo "✅ Created: $name (HTTP $http_code)"
-  else
-    echo "⚠️  Failed to create '$name' (HTTP $http_code): $(cat /tmp/slo_response.json 2>/dev/null)"
-  fi
-}
-
-create_slo "Availability SLO" '{
-  "name": "Availability SLO",
-  "description": "Service availability - 70% target (relaxed), grouped by service name",
-  "indicator": {
-    "type": "sli.kql.custom",
-    "params": {
-      "index": "traces-apm*,traces-*.otel-*",
-      "good": "NOT event.outcome:failure",
-      "filter": "processor.event:transaction",
-      "total": "*",
-      "timestampField": "@timestamp"
-    }
-  },
-  "groupBy": "service.name",
-  "budgetingMethod": "occurrences",
-  "timeWindow": { "duration": "7d", "type": "rolling" },
-  "objective": { "target": 0.70 },
-  "tags": ["auto-created"]
-}'
-
-create_slo "Latency SLO" '{
-  "name": "Latency SLO",
-  "description": "Service latency - 60% of requests under 2s (relaxed), grouped by service name",
-  "indicator": {
-    "type": "sli.kql.custom",
-    "params": {
-      "index": "traces-apm*,traces-*.otel-*",
-      "filter": "processor.event:transaction AND transaction.duration.us:*",
-      "good": "transaction.duration.us <= 2000000",
-      "total": "transaction.duration.us:*",
-      "timestampField": "@timestamp"
-    }
-  },
-  "groupBy": "service.name",
-  "budgetingMethod": "occurrences",
-  "timeWindow": { "duration": "7d", "type": "rolling" },
-  "objective": { "target": 0.60 },
-  "tags": ["auto-created"]
-}'
-
-create_slo "Error Rate SLO" '{
-  "name": "Error Rate SLO",
-  "description": "Service error rate - 70% success rate (relaxed), grouped by service name",
-  "indicator": {
-    "type": "sli.kql.custom",
-    "params": {
-      "index": "traces-apm*,traces-*.otel-*",
-      "filter": "processor.event:transaction",
-      "good": "NOT event.outcome:failure",
-      "total": "*",
-      "timestampField": "@timestamp"
-    }
-  },
-  "groupBy": "service.name",
-  "budgetingMethod": "occurrences",
-  "timeWindow": { "duration": "7d", "type": "rolling" },
-  "objective": { "target": 0.70 },
-  "tags": ["auto-created"]
-}'
-
-echo "Creating SLO Management workflow in Kibana (YAML import)..."
-
-# Write workflow YAML to temp file
-cat > /tmp/slo_workflow.yaml <<'SLO_YAML_EOF'
-name: SLO Management and Service Evaluation Workflow
-enabled: true
-description: |
-  Automatically evaluates all services and creates SLOs with relaxed targets.
-  Runs every 24 hours. IDEMPOTENT: Deletes all existing SLOs matching the pattern,
-  then creates 3 standard SLOs (Availability, Latency, Error Rate).
-  SLO Targets: Availability 95%, Error Rate 95%, Latency 85% under 2s.
-triggers:
-  - type: scheduled
-    with:
-      every: "24h"
-  - type: manual
-steps:
-  - name: workflow-start
-    type: console
-    with:
-      message: "SLO Management Workflow starting. Execution: {{ execution.id }}. Timestamp: {{ now | date: '%Y-%m-%d %H:%M:%S UTC' }}."
-  - name: get-all-existing-slos
-    type: kibana.request
-    on-failure:
-      continue: true
-    with:
-      method: "GET"
-      path: "/api/observability/slos?perPage=500"
-      timeout: '60'
-      headers:
-        Content-Type: 'application/json'
-        Accept: 'application/json'
-        kbn-xsrf: 'true'
-  - name: loop_over_results
-    type: foreach
-    foreach: "{{steps.get-all-existing-slos.output.results}}"
-    on-failure:
-      continue: true
-    steps:
-      - name: check_SLOs
-        type: if
-        condition: "foreach.item.name : *Error Rate SLO* OR foreach.item.name : *Latency SLO* OR foreach.item.name : *Availability SLO*"
-        steps:
-          - name: print-results
-            type: console
-            with:
-              message: "Deleting {{foreach.item.name | uniq}}: {{foreach.item.id | uniq}}"
-          - name: delete-loop-slo
-            type: kibana.request
-            on-failure:
-              continue: true
-            with:
-              method: DELETE
-              path: /api/observability/slos/{{ foreach.item.id | uniq}}
-              headers:
-                kbn-xsrf: "true"
-        else:
-          - name: print-else-results
-            type: console
-            with:
-              message: "Skipping {{foreach.item.name | uniq}}"
-  - name: create-slo-availability
-    type: kibana.request
-    with:
-      method: POST
-      path: /api/observability/slos
-      body:
-        name: Availability SLO
-        description: Service availability - 95% target, grouped by service name
-        indicator:
-          type: sli.kql.custom
-          params:
-            index: traces-apm*,traces-*.otel-*
-            good: NOT event.outcome:failure
-            filter: processor.event:transaction
-            total: "*"
-            timestampField: "@timestamp"
-        groupBy:
-          - service.name
-        budgetingMethod: occurrences
-        timeWindow:
-          duration: 7d
-          type: rolling
-        objective:
-          target: 0.95
-        tags: []
-      headers:
-        Content-Type: application/json
-        Accept: application/json
-        kbn-xsrf: "true"
-  - name: create-slo-latency
-    type: kibana.request
-    with:
-      method: POST
-      path: /api/observability/slos
-      body:
-        name: Latency SLO
-        description: Service latency - 85% of requests under 2s, grouped by service name
-        indicator:
-          type: sli.kql.custom
-          params:
-            index: traces-apm*,traces-*.otel-*
-            filter: processor.event:transaction AND transaction.duration.us:*
-            good: transaction.duration.us <= 2000000
-            total: transaction.duration.us:*
-            timestampField: "@timestamp"
-        groupBy:
-          - service.name
-        budgetingMethod: occurrences
-        timeWindow:
-          duration: 7d
-          type: rolling
-        objective:
-          target: 0.85
-        tags: []
-      headers:
-        Content-Type: application/json
-        Accept: application/json
-        kbn-xsrf: "true"
-  - name: create-slo-error-rate
-    type: kibana.request
-    with:
-      method: POST
-      path: /api/observability/slos
-      body:
-        name: Error Rate SLO
-        description: Service error rate - less than 5% errors, grouped by service name
-        indicator:
-          type: sli.kql.custom
-          params:
-            index: traces-apm*,traces-*.otel-*
-            filter: processor.event:transaction
-            good: NOT event.outcome:failure
-            total: "*"
-            timestampField: "@timestamp"
-        groupBy:
-          - service.name
-        budgetingMethod: occurrences
-        timeWindow:
-          duration: 7d
-          type: rolling
-        objective:
-          target: 0.95
-        tags: []
-      headers:
-        Content-Type: application/json
-        Accept: application/json
-        kbn-xsrf: "true"
-SLO_YAML_EOF
-
-# Try YAML content-type first, then JSON fallback
-SLO_WORKFLOW_RESPONSE=$(curl -s -o /tmp/slo_workflow_response.json -w "%{http_code}" \
-  -X POST "${KIBANA_URL}/api/observability/workflows" \
-  -u "admin:${ELASTICSEARCH_PASSWORD}" \
-  -H 'kbn-xsrf: true' \
-  -H 'Content-Type: application/yaml' \
-  --data-binary @/tmp/slo_workflow.yaml)
-
-echo "Workflow API attempt 1 (YAML): HTTP $SLO_WORKFLOW_RESPONSE"
-echo "Response: $(cat /tmp/slo_workflow_response.json 2>/dev/null)"
-
-if [[ "$SLO_WORKFLOW_RESPONSE" != "200" && "$SLO_WORKFLOW_RESPONSE" != "201" ]]; then
-  echo "Workflow API attempt 2 (JSON body)..."
-  SLO_WORKFLOW_RESPONSE=$(curl -s -o /tmp/slo_workflow_response.json -w "%{http_code}" \
-    -X POST "${KIBANA_URL}/api/observability/workflows" \
-    -u "admin:${ELASTICSEARCH_PASSWORD}" \
-    -H 'kbn-xsrf: true' \
-    -H 'Content-Type: application/json' \
-  -d '{
-    "name": "SLO Management and Service Evaluation Workflow",
-    "enabled": true,
-    "description": "Automatically evaluates all services and creates SLOs with relaxed targets. Runs every 24 hours. IDEMPOTENT: Deletes all existing SLOs, then creates 3 standard SLOs (Availability, Latency, Error Rate). Each run leaves exactly 3 SLOs, no duplicates. SLO Targets: Availability 95%, Error Rate 95%, Latency 85% under 2s.",
-    "triggers": [
-      { "type": "scheduled", "with": { "every": "24h" } },
-      { "type": "manual" }
-    ],
-    "steps": [
-      {
-        "name": "workflow-start",
-        "type": "console",
-        "with": {
-          "message": "SLO Management Workflow starting. Execution ID: {{ execution.id }}. Timestamp: {{ now | date: \"%Y-%m-%d %H:%M:%S UTC\" }}. IDEMPOTENT: will delete and recreate 3 standard SLOs."
-        }
-      },
-      {
-        "name": "get-all-existing-slos",
-        "type": "kibana.request",
-        "on-failure": { "continue": true },
-        "with": {
-          "method": "GET",
-          "path": "/api/observability/slos?perPage=500",
-          "timeout": "60",
-          "headers": {
-            "Content-Type": "application/json",
-            "Accept": "application/json",
-            "kbn-xsrf": "true"
-          }
-        }
-      },
-      {
-        "name": "loop_over_results",
-        "type": "foreach",
-        "foreach": "{{steps.get-all-existing-slos.output.results}}",
-        "on-failure": { "continue": true },
-        "steps": [
-          {
-            "name": "check_SLOs",
-            "type": "if",
-            "condition": "foreach.item.name : *Error Rate SLO* OR foreach.item.name : *Latency SLO* OR foreach.item.name : *Availability SLO*",
-            "steps": [
-              {
-                "name": "print-results",
-                "type": "console",
-                "with": { "message": "{{foreach.item.name | uniq}}: {{foreach.item.id | uniq}}" }
-              },
-              {
-                "name": "delete-loop-slo",
-                "type": "kibana.request",
-                "on-failure": { "continue": true },
-                "with": {
-                  "method": "DELETE",
-                  "path": "/api/observability/slos/{{foreach.item.id | uniq}}",
-                  "headers": { "kbn-xsrf": "true" }
-                }
-              }
-            ],
-            "else": [
-              {
-                "name": "print-else-results",
-                "type": "console",
-                "with": { "message": "{{foreach.item.name | uniq}}: {{foreach.item.id | uniq}}" }
-              }
-            ]
-          }
-        ]
-      },
-      {
-        "name": "create-slo-availability",
-        "type": "kibana.request",
-        "with": {
-          "method": "POST",
-          "path": "/api/observability/slos",
-          "body": {
-            "name": "Availability SLO",
-            "description": "Automatically created SLO for service availability - 95% target, grouped by service name",
-            "indicator": {
-              "type": "sli.kql.custom",
-              "params": {
-                "index": "traces-apm.rum-default*,traces-*.otel-*",
-                "good": "NOT event.outcome:failure",
-                "filter": "processor.event:transaction",
-                "total": "*",
-                "timestampField": "@timestamp"
-              }
-            },
-            "groupBy": ["service.name"],
-            "budgetingMethod": "occurrences",
-            "timeWindow": { "duration": "7d", "type": "rolling" },
-            "objective": { "target": 0.95 },
-            "tags": []
-          },
-          "headers": {
-            "Content-Type": "application/json",
-            "Accept": "application/json",
-            "kbn-xsrf": "true"
-          }
-        }
-      },
-      {
-        "name": "create-slo-latency",
-        "type": "kibana.request",
-        "with": {
-          "method": "POST",
-          "path": "/api/observability/slos",
-          "body": {
-            "name": "Latency SLO",
-            "description": "Automatically created SLO for service latency - 85% of requests < 2s target, grouped by service name",
-            "indicator": {
-              "type": "sli.kql.custom",
-              "params": {
-                "index": "traces-apm.rum-default*,traces-*.otel-*",
-                "filter": "processor.event:transaction AND transaction.duration.us:*",
-                "good": "transaction.duration.us <= 2000000",
-                "total": "transaction.duration.us:*",
-                "timestampField": "@timestamp"
-              }
-            },
-            "groupBy": ["service.name"],
-            "budgetingMethod": "occurrences",
-            "timeWindow": { "duration": "7d", "type": "rolling" },
-            "objective": { "target": 0.85 },
-            "tags": []
-          },
-          "headers": {
-            "Content-Type": "application/json",
-            "Accept": "application/json",
-            "kbn-xsrf": "true"
-          }
-        }
-      },
-      {
-        "name": "create-slo-error-rate",
-        "type": "kibana.request",
-        "with": {
-          "method": "POST",
-          "path": "/api/observability/slos",
-          "body": {
-            "name": "Error Rate SLO",
-            "description": "Automatically created SLO for service error rate - less than 5% error rate target, grouped by service name",
-            "indicator": {
-              "type": "sli.kql.custom",
-              "params": {
-                "index": "traces-apm.rum-default*,traces-*.otel-*",
-                "filter": "processor.event:transaction",
-                "good": "NOT event.outcome:failure",
-                "total": "*",
-                "timestampField": "@timestamp"
-              }
-            },
-            "groupBy": ["service.name"],
-            "budgetingMethod": "occurrences",
-            "timeWindow": { "duration": "7d", "type": "rolling" },
-            "objective": { "target": 0.95 },
-            "tags": []
-          },
-          "headers": {
-            "Content-Type": "application/json",
-            "Accept": "application/json",
-            "kbn-xsrf": "true"
-          }
-        }
-      }
-    ]
-  }')
-
-  echo "Workflow API attempt 2 (JSON): HTTP $SLO_WORKFLOW_RESPONSE"
-  echo "Response: $(cat /tmp/slo_workflow_response.json 2>/dev/null)"
-fi
-
-if [[ "$SLO_WORKFLOW_RESPONSE" == "200" || "$SLO_WORKFLOW_RESPONSE" == "201" ]]; then
-  echo "✅ SLO Management workflow created successfully (HTTP $SLO_WORKFLOW_RESPONSE)"
-else
-  echo "⚠️  All workflow API attempts failed (HTTP $SLO_WORKFLOW_RESPONSE)"
-  echo "Final response: $(cat /tmp/slo_workflow_response.json 2>/dev/null || echo 'no response body')"
-
-  # Attempt 3: Try demo app's internal workflow creation if available
-  echo "Workflow API attempt 3 (demo app relay)..."
-  DEMO_WF_RESPONSE=$(curl -s -o /tmp/slo_wf_demo.json -w "%{http_code}" \
-    -X POST "http://localhost:8090/api/workflows/create" \
-    -H 'Content-Type: application/yaml' \
-    --data-binary @/tmp/slo_workflow.yaml 2>/dev/null) || DEMO_WF_RESPONSE="000"
-  echo "Demo app relay: HTTP $DEMO_WF_RESPONSE — $(cat /tmp/slo_wf_demo.json 2>/dev/null)"
-
-  echo "SLOs are created directly and will refresh on the next 24h cycle."
-  echo "Workflow YAML is available at /tmp/slo_workflow.yaml for manual import via Observability → Workflows → Import"
-fi
 
 echo "Track setup complete."
