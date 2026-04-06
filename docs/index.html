@@ -1,0 +1,728 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Elastic Autonomous Observability</title>
+
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reset.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+  <style>
+    /* ── Elastic brand theme ───────────────────────────────────────── */
+    :root {
+      --elastic-yellow: #FEC514;
+      --elastic-blue:   #07C;
+      --elastic-pink:   #F04E98;
+      --elastic-green:  #00BFB3;
+      --elastic-purple: #A855F7;
+      --bg-dark:        #0D0D12;
+      --bg-card:        #1A1B23;
+      --bg-card2:       #222330;
+      --text-primary:   #F0F0F5;
+      --text-muted:     #9090A8;
+      --border:         rgba(255,255,255,0.08);
+    }
+
+    .reveal-viewport { background: var(--bg-dark); }
+
+    .reveal {
+      font-family: 'Inter', sans-serif;
+      font-size: 36px;
+      color: var(--text-primary);
+    }
+
+    .reveal h1, .reveal h2, .reveal h3, .reveal h4 {
+      font-family: 'Inter', sans-serif;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      text-transform: none;
+      color: #fff;
+      margin-bottom: 0.4em;
+    }
+
+    .reveal h1 { font-size: 2.2em; line-height: 1.1; }
+    .reveal h2 { font-size: 1.4em; }
+    .reveal h3 { font-size: 1.1em; color: var(--elastic-yellow); }
+
+    .reveal p  { line-height: 1.5; color: var(--text-primary); }
+    .reveal ul { list-style: none; padding: 0; margin: 0; }
+    .reveal ul li { padding: 0.25em 0; }
+    .reveal ul li::before { content: "→ "; color: var(--elastic-yellow); font-weight: 600; }
+
+    .reveal section { text-align: left; }
+
+    .reveal .slides section.center { text-align: center; }
+
+    /* Elastic logo bar */
+    .elastic-bar {
+      display: flex; align-items: center; gap: 10px;
+      margin-bottom: 1.2em;
+    }
+    .elastic-bar .logo-mark {
+      width: 36px; height: 36px;
+      background: var(--elastic-yellow);
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 900; font-size: 18px; color: #000;
+    }
+    .elastic-bar .logo-text {
+      font-size: 0.55em; font-weight: 600; color: var(--text-muted);
+      letter-spacing: 0.12em; text-transform: uppercase;
+    }
+
+    /* Tag pills */
+    .tag {
+      display: inline-block;
+      padding: 0.18em 0.7em;
+      border-radius: 999px;
+      font-size: 0.45em;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      margin: 0 4px;
+      vertical-align: middle;
+      text-transform: uppercase;
+    }
+    .tag-yellow  { background: rgba(254,197,20,0.15);  color: var(--elastic-yellow); border: 1px solid rgba(254,197,20,0.3); }
+    .tag-blue    { background: rgba(0,119,204,0.15);   color: #5BB8FF;              border: 1px solid rgba(0,119,204,0.3); }
+    .tag-green   { background: rgba(0,191,179,0.15);   color: var(--elastic-green); border: 1px solid rgba(0,191,179,0.3); }
+    .tag-pink    { background: rgba(240,78,152,0.15);  color: var(--elastic-pink);  border: 1px solid rgba(240,78,152,0.3); }
+    .tag-purple  { background: rgba(168,85,247,0.15);  color: #C084FC;              border: 1px solid rgba(168,85,247,0.3); }
+
+    /* Cards */
+    .card-grid {
+      display: grid;
+      gap: 16px;
+      margin-top: 0.6em;
+    }
+    .card-grid.cols-2 { grid-template-columns: 1fr 1fr; }
+    .card-grid.cols-3 { grid-template-columns: 1fr 1fr 1fr; }
+
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1em 1.1em;
+    }
+    .card .card-icon { font-size: 1.5em; margin-bottom: 0.3em; }
+    .card .card-title {
+      font-size: 0.6em; font-weight: 700;
+      color: #fff; margin-bottom: 0.4em;
+    }
+    .card .card-body {
+      font-size: 0.5em; color: var(--text-muted); line-height: 1.5;
+    }
+    .card.accent-yellow { border-color: rgba(254,197,20,0.35); }
+    .card.accent-blue   { border-color: rgba(0,119,204,0.4); }
+    .card.accent-green  { border-color: rgba(0,191,179,0.35); }
+    .card.accent-pink   { border-color: rgba(240,78,152,0.35); }
+
+    /* Step list */
+    .step-list { list-style: none; padding: 0; margin: 0; }
+    .step-list li {
+      display: flex; align-items: flex-start; gap: 0.8em;
+      padding: 0.5em 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.62em;
+    }
+    .step-list li:last-child { border-bottom: none; }
+    .step-list li::before { content: none; }
+    .step-num {
+      min-width: 28px; height: 28px;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.85em; font-weight: 700;
+      flex-shrink: 0;
+    }
+    .step-num.yellow { background: var(--elastic-yellow); color: #000; }
+    .step-num.blue   { background: var(--elastic-blue);   color: #fff; }
+    .step-num.green  { background: var(--elastic-green);  color: #000; }
+    .step-num.pink   { background: var(--elastic-pink);   color: #fff; }
+
+    /* Check list */
+    .check-list { list-style: none; padding: 0; }
+    .check-list li { padding: 0.25em 0; font-size: 0.62em; }
+    .check-list li::before { content: "✅ "; }
+
+    /* Flow diagram */
+    .flow {
+      display: flex; align-items: center; gap: 0;
+      margin: 0.6em 0;
+      flex-wrap: nowrap;
+      overflow: hidden;
+    }
+    .flow-step {
+      background: var(--bg-card2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 0.6em 0.8em;
+      text-align: center;
+      flex: 1;
+      font-size: 0.44em;
+    }
+    .flow-step .fs-icon { font-size: 1.8em; display: block; margin-bottom: 0.2em; }
+    .flow-step .fs-label { font-weight: 600; color: #fff; }
+    .flow-step .fs-sub { color: var(--text-muted); margin-top: 0.2em; }
+    .flow-arrow { color: var(--elastic-yellow); font-size: 0.7em; padding: 0 4px; flex-shrink: 0; }
+
+    /* Code block */
+    .reveal pre { margin: 0; }
+    .reveal pre code {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.5em;
+      background: var(--bg-card2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1em;
+      line-height: 1.6;
+      color: #C9D1D9;
+    }
+    .reveal code { font-family: 'DM Mono', monospace; }
+
+    /* Highlight */
+    .hl-yellow { color: var(--elastic-yellow); font-weight: 600; }
+    .hl-blue   { color: #5BB8FF; font-weight: 600; }
+    .hl-green  { color: var(--elastic-green); font-weight: 600; }
+    .hl-pink   { color: var(--elastic-pink); font-weight: 600; }
+
+    /* Subtitle / kicker */
+    .kicker {
+      font-size: 0.45em; font-weight: 600; letter-spacing: 0.1em;
+      text-transform: uppercase; color: var(--elastic-yellow);
+      margin-bottom: 0.5em;
+    }
+    .subtitle {
+      font-size: 0.62em; color: var(--text-muted); line-height: 1.5;
+    }
+
+    /* Divider */
+    .divider {
+      width: 48px; height: 3px;
+      background: var(--elastic-yellow);
+      border-radius: 2px;
+      margin: 0.6em 0;
+    }
+
+    /* Service pills */
+    .service-grid {
+      display: flex; flex-wrap: wrap; gap: 8px; margin-top: 0.5em;
+    }
+    .svc {
+      background: var(--bg-card2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0.3em 0.8em;
+      font-size: 0.44em;
+      font-family: 'DM Mono', monospace;
+      color: var(--text-muted);
+    }
+    .svc.cloud-aws    { border-color: rgba(255,153,0,0.4);   color: #FFB84D; }
+    .svc.cloud-gcp    { border-color: rgba(66,133,244,0.4);  color: #7EB8F7; }
+    .svc.cloud-azure  { border-color: rgba(0,120,212,0.4);   color: #66B2FF; }
+
+    /* Stats row */
+    .stat-row { display: flex; gap: 12px; margin-top: 0.6em; }
+    .stat-box {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 0.7em 1em;
+      flex: 1; text-align: center;
+    }
+    .stat-box .stat-num {
+      font-size: 1em; font-weight: 800;
+      color: var(--elastic-yellow);
+    }
+    .stat-box .stat-label {
+      font-size: 0.38em; color: var(--text-muted);
+      margin-top: 0.2em; text-transform: uppercase; letter-spacing: 0.06em;
+    }
+
+    /* Progress bar bg for slide number */
+    .reveal .progress { color: var(--elastic-yellow); }
+    .reveal .controls { color: var(--elastic-yellow); }
+
+    /* Speaker notes */
+    .reveal .speaker-notes { font-size: 14px; }
+
+    /* Title slide bg gradient */
+    .slide-title { position: relative; overflow: hidden; }
+    .slide-title::before {
+      content: '';
+      position: absolute;
+      top: -100px; right: -100px;
+      width: 500px; height: 500px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(254,197,20,0.08) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .slide-title::after {
+      content: '';
+      position: absolute;
+      bottom: -80px; left: 200px;
+      width: 300px; height: 300px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(0,191,179,0.07) 0%, transparent 70%);
+      pointer-events: none;
+    }
+  </style>
+</head>
+
+<body>
+<div class="reveal">
+<div class="slides">
+
+<!-- ── SLIDE 1: Title ────────────────────────────────────────────────── -->
+<section class="slide-title center">
+  <div style="display:flex;align-items:center;justify-content:center;gap:14px;margin-bottom:1.2em;">
+    <div style="width:52px;height:52px;background:var(--elastic-yellow);border-radius:12px;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:26px;color:#000;">e</div>
+    <span style="font-size:0.55em;font-weight:600;color:var(--text-muted);letter-spacing:0.14em;text-transform:uppercase;">Elastic</span>
+  </div>
+  <h1>Autonomous<br>Observability</h1>
+  <div class="divider" style="margin:0.6em auto;"></div>
+  <p class="subtitle" style="text-align:center;">
+    From alert to root cause to fix —<br>
+    <span class="hl-yellow">with no human intervention required.</span>
+  </p>
+  <div style="margin-top:1.5em;display:flex;justify-content:center;gap:8px;">
+    <span class="tag tag-yellow">ES|QL</span>
+    <span class="tag tag-blue">AI Workflows</span>
+    <span class="tag tag-green">OpenTelemetry</span>
+    <span class="tag tag-pink">SLOs</span>
+    <span class="tag tag-purple">Hands-On Lab</span>
+  </div>
+
+  <aside class="notes">
+    Welcome to the Elastic Autonomous Observability workshop.
+    Today you'll wire real OpenTelemetry telemetry into Elastic Cloud,
+    inject realistic faults, and watch the AI agent investigate and remediate —
+    automatically.
+  </aside>
+</section>
+
+<!-- ── SLIDE 2: The Problem ──────────────────────────────────────────── -->
+<section>
+  <div class="kicker">Why we're here</div>
+  <h2>Modern systems are too complex<br>to observe manually</h2>
+  <div class="divider"></div>
+
+  <div class="card-grid cols-2" style="margin-top:0.8em;">
+    <div class="card">
+      <div class="card-icon">📊</div>
+      <div class="card-title">Too much data</div>
+      <div class="card-body">Thousands of spans, logs, and metrics per second — humans can't keep up during an incident.</div>
+    </div>
+    <div class="card">
+      <div class="card-icon">⏱️</div>
+      <div class="card-title">MTTR is too high</div>
+      <div class="card-body">Average incident response takes 30+ minutes. Most of that time is data gathering, not fixing.</div>
+    </div>
+    <div class="card accent-yellow">
+      <div class="card-icon">🔗</div>
+      <div class="card-title">Cross-cloud complexity</div>
+      <div class="card-body">A single fault can cascade across AWS, GCP, and Azure — making root cause invisible to any one team.</div>
+    </div>
+    <div class="card accent-green">
+      <div class="card-icon">🤖</div>
+      <div class="card-title">The answer: autonomy</div>
+      <div class="card-body">AI agents that detect, investigate, and remediate — closing the loop without waking anyone up at 3am.</div>
+    </div>
+  </div>
+
+  <aside class="notes">
+    The traditional on-call model doesn't scale. We need machines to do the first responder work.
+  </aside>
+</section>
+
+<!-- ── SLIDE 3: The Scenario ─────────────────────────────────────────── -->
+<section>
+  <div class="kicker">Your lab environment</div>
+  <h2>Fanatics Collectibles — Live Demo Platform</h2>
+  <div class="divider"></div>
+  <p class="subtitle">9 simulated microservices across three clouds, emitting real OpenTelemetry signals.</p>
+
+  <div class="service-grid" style="margin-top:0.8em;">
+    <span class="svc cloud-aws">🟠 auction-engine <small>(AWS)</small></span>
+    <span class="svc cloud-aws">🟠 card-printing-system <small>(AWS)</small></span>
+    <span class="svc cloud-aws">🟠 digital-marketplace <small>(AWS)</small></span>
+    <span class="svc cloud-gcp">🔵 inventory-service <small>(GCP)</small></span>
+    <span class="svc cloud-gcp">🔵 payment-processor <small>(GCP)</small></span>
+    <span class="svc cloud-gcp">🔵 notification-hub <small>(GCP)</small></span>
+    <span class="svc cloud-azure">💜 user-auth-service <small>(Azure)</small></span>
+    <span class="svc cloud-azure">💜 grading-platform <small>(Azure)</small></span>
+    <span class="svc cloud-azure">💜 shipping-tracker <small>(Azure)</small></span>
+  </div>
+
+  <div class="stat-row" style="margin-top:1em;">
+    <div class="stat-box"><div class="stat-num">9</div><div class="stat-label">Microservices</div></div>
+    <div class="stat-box"><div class="stat-num">3</div><div class="stat-label">Cloud Providers</div></div>
+    <div class="stat-box"><div class="stat-num">20</div><div class="stat-label">Fault Channels</div></div>
+    <div class="stat-box"><div class="stat-num">4</div><div class="stat-label">AI Workflows</div></div>
+    <div class="stat-box"><div class="stat-num">21+</div><div class="stat-label">Auto-SLOs</div></div>
+  </div>
+
+  <aside class="notes">
+    Fanatics is a real collectibles marketplace. Our scenario simulates the core microservices
+    with realistic OpenTelemetry traces, logs, and metrics. All traffic is synthetic but
+    structurally identical to production signals.
+  </aside>
+</section>
+
+<!-- ── SLIDE 4: Workshop Overview ────────────────────────────────────── -->
+<section>
+  <div class="kicker">Workshop structure</div>
+  <h2>Three labs, ~45 minutes</h2>
+  <div class="divider"></div>
+
+  <ul class="step-list" style="margin-top:0.8em;">
+    <li>
+      <div class="step-num yellow">1</div>
+      <div>
+        <strong style="font-size:1.1em;">Connect to Elastic Cloud &amp; Deploy</strong><br>
+        <span style="color:var(--text-muted);">Your Elastic Cloud Serverless project is pre-provisioned. Explore the deployed scenario — 9 microservices, 4 AI workflows, 21 SLOs, and 20 alert rules — all created automatically.</span>
+      </div>
+    </li>
+    <li>
+      <div class="step-num blue">2</div>
+      <div>
+        <strong style="font-size:1.1em;">Explore Telemetry with ES|QL</strong><br>
+        <span style="color:var(--text-muted);">Query live logs, traces, and infrastructure metrics using ES|QL. Explore APM service maps, SLO dashboards, and time-series anomaly detection.</span>
+      </div>
+    </li>
+    <li>
+      <div class="step-num green">3</div>
+      <div>
+        <strong style="font-size:1.1em;">Inject a Fault &amp; Watch Elastic Detect It</strong><br>
+        <span style="color:var(--text-muted);">Pick a fault channel, inject it, and watch ES|QL alert rules fire within 30 seconds. Observe the AI agent investigate autonomously and create a resolved case.</span>
+      </div>
+    </li>
+  </ul>
+
+  <aside class="notes">
+    Each lab builds on the previous one. Lab 1 is exploration, Lab 2 is deep-dive querying,
+    Lab 3 is the payoff — chaos engineering meets autonomous AI response.
+  </aside>
+</section>
+
+<!-- ── SLIDE 5: Lab 1 ─────────────────────────────────────────────────── -->
+<section>
+  <div class="kicker">Lab 1</div>
+  <h2>Connect to Elastic Cloud &amp; Deploy</h2>
+  <div class="divider"></div>
+
+  <p class="subtitle">Everything is provisioned automatically when the lab starts. Your job is to explore what was built.</p>
+
+  <div class="card-grid cols-2" style="margin-top:0.8em;">
+    <div class="card accent-yellow">
+      <div class="card-title">🖥️ Demo App</div>
+      <div class="card-body">Scenario selector — overview and live deployment status of all 9 microservices.</div>
+    </div>
+    <div class="card">
+      <div class="card-title">📊 Live Dashboard</div>
+      <div class="card-body">Real-time service health across all 9 microservices. Watch the telemetry flow.</div>
+    </div>
+    <div class="card">
+      <div class="card-title">⚡ Chaos Controller</div>
+      <div class="card-body">20 fault channels ready to inject — you'll use this in Lab 3.</div>
+    </div>
+    <div class="card accent-blue">
+      <div class="card-title">☁️ Elastic Serverless</div>
+      <div class="card-body">Your Kibana instance — pre-logged in, pre-configured with all resources.</div>
+    </div>
+  </div>
+
+  <ul class="check-list" style="margin-top:0.8em;">
+    <li>Navigate to Applications → Service Inventory (7 services)</li>
+    <li>Explore Observability → SLOs (21 auto-created SLOs)</li>
+    <li>Check Observability → Workflows (4 AI workflows)</li>
+  </ul>
+
+  <aside class="notes">
+    Setup takes 3-4 minutes while the wait screen is showing.
+    When learners arrive at the challenge, everything is already running.
+    Point them to each tab and let them explore freely.
+  </aside>
+</section>
+
+<!-- ── SLIDE 6: Lab 2 ─────────────────────────────────────────────────── -->
+<section>
+  <div class="kicker">Lab 2</div>
+  <h2>Explore Telemetry with ES|QL</h2>
+  <div class="divider"></div>
+
+  <p class="subtitle">ES|QL is Elastic's next-generation piped query language. Use it to slice through millions of events instantly.</p>
+
+  <pre><code>// Count recent errors by service
+FROM logs-*
+| WHERE @timestamp > NOW() - 15 MINUTES
+| WHERE log.level == "ERROR"
+| STATS error_count = COUNT(*) BY service.name
+| SORT error_count DESC
+| LIMIT 10</code></pre>
+
+  <div class="card-grid cols-3" style="margin-top:0.8em;">
+    <div class="card">
+      <div class="card-title">📈 Time Series</div>
+      <div class="card-body">Query log and metric trends with BUCKET() aggregations. See error rate over time.</div>
+    </div>
+    <div class="card accent-green">
+      <div class="card-title">🗺️ APM Service Map</div>
+      <div class="card-body">Visualize distributed traces across all 9 services and 3 cloud providers.</div>
+    </div>
+    <div class="card">
+      <div class="card-title">🏗️ Infrastructure</div>
+      <div class="card-body">3 simulated hosts (AWS, GCP, Azure) with CPU, memory, and disk metrics.</div>
+    </div>
+  </div>
+
+  <aside class="notes">
+    ES|QL supports pipes (|), aggregations (STATS), filters (WHERE), and window functions.
+    It runs at Elasticsearch speed — no sampling, full fidelity.
+    Encourage learners to modify the queries and experiment.
+  </aside>
+</section>
+
+<!-- ── SLIDE 7: Lab 3 ─────────────────────────────────────────────────── -->
+<section>
+  <div class="kicker">Lab 3</div>
+  <h2>Inject a Fault &amp; Watch Elastic Detect It</h2>
+  <div class="divider"></div>
+
+  <ul class="step-list">
+    <li>
+      <div class="step-num yellow">1</div>
+      <div>
+        <strong>Open the Chaos Controller tab</strong><br>
+        <span style="color:var(--text-muted);">Choose any fault channel (e.g. CH-07: WiFi AP Disconnect Storm). Select a fault mode and click <strong>Inject Fault</strong>.</span>
+      </div>
+    </li>
+    <li>
+      <div class="step-num blue">2</div>
+      <div>
+        <strong>Watch the error spike appear in ES|QL</strong><br>
+        <span style="color:var(--text-muted);">Run the error spike query in Discover. Within 30–60 seconds an ES|QL alert rule fires and the AI workflow triggers.</span>
+      </div>
+    </li>
+    <li>
+      <div class="step-num green">3</div>
+      <div>
+        <strong>Observe the AI agent in Workflows</strong><br>
+        <span style="color:var(--text-muted);">Navigate to <strong>Observability → Workflows</strong>. Watch the execution run. Click <em>View Full Conversation</em> to see the AI agent's reasoning.</span>
+      </div>
+    </li>
+    <li>
+      <div class="step-num pink">4</div>
+      <div>
+        <strong>Review the auto-created Case</strong><br>
+        <span style="color:var(--text-muted);">Navigate to <strong>Observability → Cases</strong>. The AI agent created and resolved a case — with RCA, affected services, and recommended actions.</span>
+      </div>
+    </li>
+  </ul>
+
+  <aside class="notes">
+    This is the money slide. The entire sequence — fault → alert → workflow → AI agent → case — happens in under 5 minutes with zero human intervention.
+  </aside>
+</section>
+
+<!-- ── SLIDE 8: The AI Loop ───────────────────────────────────────────── -->
+<section>
+  <div class="kicker">Under the hood</div>
+  <h2>The Autonomous Observability Loop</h2>
+  <div class="divider"></div>
+
+  <div class="flow" style="margin:1em 0;">
+    <div class="flow-step">
+      <span class="fs-icon">⚡</span>
+      <div class="fs-label">Fault Injected</div>
+      <div class="fs-sub">Chaos Controller</div>
+    </div>
+    <div class="flow-arrow">▶</div>
+    <div class="flow-step">
+      <span class="fs-icon">📋</span>
+      <div class="fs-label">Logs Flow</div>
+      <div class="fs-sub">OpenTelemetry → ES</div>
+    </div>
+    <div class="flow-arrow">▶</div>
+    <div class="flow-step" style="border-color:rgba(254,197,20,0.4);">
+      <span class="fs-icon">🚨</span>
+      <div class="fs-label">Alert Fires</div>
+      <div class="fs-sub">ES|QL Rule · 30s</div>
+    </div>
+    <div class="flow-arrow">▶</div>
+    <div class="flow-step" style="border-color:rgba(0,191,179,0.4);">
+      <span class="fs-icon">🔄</span>
+      <div class="fs-label">Workflow Runs</div>
+      <div class="fs-sub">Kibana Workflows</div>
+    </div>
+    <div class="flow-arrow">▶</div>
+    <div class="flow-step" style="border-color:rgba(0,119,204,0.4);">
+      <span class="fs-icon">🤖</span>
+      <div class="fs-label">AI Investigates</div>
+      <div class="fs-sub">AI Agent + Tools</div>
+    </div>
+    <div class="flow-arrow">▶</div>
+    <div class="flow-step" style="border-color:rgba(240,78,152,0.4);">
+      <span class="fs-icon">✅</span>
+      <div class="fs-label">Case Closed</div>
+      <div class="fs-sub">RCA + Actions</div>
+    </div>
+  </div>
+
+  <div class="card-grid cols-2" style="margin-top:0.6em;">
+    <div class="card accent-yellow">
+      <div class="card-title">ES|QL Alert Rules</div>
+      <div class="card-body">20 rules running on 30-second schedules. Each monitors a specific fault pattern — log keywords, error rate spikes, latency anomalies.</div>
+    </div>
+    <div class="card accent-blue">
+      <div class="card-title">AI Agent Tools</div>
+      <div class="card-body">The agent has access to ES|QL search, SLO status, APM traces, and case management — it builds a full picture before acting.</div>
+    </div>
+  </div>
+
+  <aside class="notes">
+    The key insight: no human touches the keyboard between fault injection and case resolution.
+    The ES|QL alert rule fires in ~30 seconds. The workflow and AI agent finish in 2-4 minutes.
+  </aside>
+</section>
+
+<!-- ── SLIDE 9: Key Technologies ─────────────────────────────────────── -->
+<section>
+  <div class="kicker">What powers this</div>
+  <h2>Key Elastic Technologies</h2>
+  <div class="divider"></div>
+
+  <div class="card-grid cols-2" style="margin-top:0.6em;">
+    <div class="card accent-yellow">
+      <div class="card-icon">📝</div>
+      <div class="card-title">ES|QL</div>
+      <div class="card-body">Next-generation piped query language. Powers alert rules, dashboards, and real-time analysis. No index patterns required.</div>
+    </div>
+    <div class="card accent-blue">
+      <div class="card-icon">🔄</div>
+      <div class="card-title">Kibana Workflows</div>
+      <div class="card-body">Trigger AI agents from alerts. Define multi-step automated response — investigate, notify, remediate, and close cases.</div>
+    </div>
+    <div class="card accent-green">
+      <div class="card-icon">🎯</div>
+      <div class="card-title">SLOs</div>
+      <div class="card-body">21 auto-generated SLOs — availability, error rate, and latency targets per service. Burn rate alerts for early warning.</div>
+    </div>
+    <div class="card accent-pink">
+      <div class="card-icon">📡</div>
+      <div class="card-title">OpenTelemetry (EDOT)</div>
+      <div class="card-body">Elastic's OTel distribution (EDOT) for zero-code auto-instrumentation. Works with any OTLP-compatible collector.</div>
+    </div>
+  </div>
+
+  <aside class="notes">
+    These four technologies work together. ES|QL for detection, Workflows for orchestration,
+    SLOs for health baselines, and EDOT for unified telemetry collection.
+  </aside>
+</section>
+
+<!-- ── SLIDE 10: SLOs Deep Dive ──────────────────────────────────────── -->
+<section>
+  <div class="kicker">Service Level Objectives</div>
+  <h2>21 Auto-Generated SLOs</h2>
+  <div class="divider"></div>
+
+  <p class="subtitle">Three SLO types are created automatically per service — giving you a health baseline before any fault is injected.</p>
+
+  <div class="card-grid cols-3" style="margin-top:0.8em;">
+    <div class="card accent-green">
+      <div class="card-icon">💚</div>
+      <div class="card-title">Availability</div>
+      <div class="card-body">Measures the percentage of successful requests per service. Target: 99%+ uptime.</div>
+    </div>
+    <div class="card accent-yellow">
+      <div class="card-icon">⚠️</div>
+      <div class="card-title">Error Rate</div>
+      <div class="card-body">Tracks the ratio of error-level log events. Fires when error ratio exceeds threshold.</div>
+    </div>
+    <div class="card accent-blue">
+      <div class="card-icon">⏱️</div>
+      <div class="card-title">Latency</div>
+      <div class="card-body">P95 response time target. Detects performance degradation before users notice.</div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:0.8em;background:var(--bg-card2);">
+    <div class="card-body">
+      <span class="hl-yellow">Tip:</span> Navigate to <strong>Observability → SLOs</strong> and set the time range to <strong>Last 15 minutes</strong> to see live burn rates from the running scenario.
+    </div>
+  </div>
+
+  <aside class="notes">
+    SLOs are the bridge between raw telemetry and business health.
+    When an SLO burns, the AI agent automatically factors it into root cause analysis.
+  </aside>
+</section>
+
+<!-- ── SLIDE 11: Get Started ─────────────────────────────────────────── -->
+<section class="center">
+  <div class="kicker" style="text-align:center;">Ready to begin</div>
+  <h2 style="text-align:center;">Start the Workshop</h2>
+  <div class="divider" style="margin:0.6em auto;"></div>
+
+  <div class="card" style="max-width:600px;margin:1em auto;text-align:left;">
+    <ul class="step-list">
+      <li>
+        <div class="step-num yellow">1</div>
+        <div><strong>Go to play.instruqt.com</strong><br>
+        <span style="color:var(--text-muted);">Search for <em>Elastic Autonomous Observability</em></span></div>
+      </li>
+      <li>
+        <div class="step-num blue">2</div>
+        <div><strong>Start the track</strong><br>
+        <span style="color:var(--text-muted);">Elastic Cloud project auto-provisions in 3–4 minutes</span></div>
+      </li>
+      <li>
+        <div class="step-num green">3</div>
+        <div><strong>Follow the instructions panel</strong><br>
+        <span style="color:var(--text-muted);">Each lab has step-by-step guidance — use the tabs to navigate</span></div>
+      </li>
+    </ul>
+  </div>
+
+  <div style="margin-top:1.2em;display:flex;justify-content:center;gap:8px;flex-wrap:wrap;">
+    <span class="tag tag-yellow">~45 minutes</span>
+    <span class="tag tag-blue">No setup required</span>
+    <span class="tag tag-green">Elastic Cloud included</span>
+    <span class="tag tag-purple">Beginner friendly</span>
+  </div>
+
+  <p style="margin-top:1.5em;font-size:0.5em;color:var(--text-muted);">
+    Questions? Find us at <span class="hl-yellow">elastic.co/community</span>
+  </p>
+
+  <aside class="notes">
+    Send them to Instruqt now. The track handles everything — credentials, provisioning,
+    and cleanup are all automatic. Average completion time is 40-50 minutes.
+  </aside>
+</section>
+
+</div><!-- /slides -->
+</div><!-- /reveal -->
+
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.js"></script>
+<script>
+  Reveal.initialize({
+    hash: true,
+    slideNumber: 'c/t',
+    progress: true,
+    controls: true,
+    center: false,
+    transition: 'fade',
+    transitionSpeed: 'fast',
+    backgroundTransition: 'fade',
+    width: 1280,
+    height: 720,
+    margin: 0.04,
+    plugins: []
+  });
+</script>
+</body>
+</html>
