@@ -1,0 +1,18 @@
+---
+description: Push Instruqt track after any change under elastic-autonomous-observability/
+alwaysApply: true
+---
+
+# Instruqt track — always push
+
+Whenever you **add, edit, move, or delete** any file under `elastic-autonomous-observability/` (the Instruqt track: challenges, `track.yml`, `config.yml`, `track_scripts/`, etc.), **before you consider the task done** you must:
+
+1. Run from the repo root:
+   ```bash
+   cd elastic-autonomous-observability && instruqt track push --force
+   ```
+2. If Instruqt updates `elastic-autonomous-observability/track.yml` (checksum line), **commit that change** with message: `Sync track.yml checksum after Instruqt push`.
+
+If `instruqt track push` fails (auth, network, remote drift), retry once with `--force`; if it still fails, say so clearly and leave `*.remote` conflict files untouched unless you are explicitly merging a pull.
+
+Do **not** skip the push because the diff “looks small” or “only copy” — the hosted lab must stay in sync.
