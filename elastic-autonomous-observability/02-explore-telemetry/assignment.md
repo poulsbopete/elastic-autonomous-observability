@@ -256,7 +256,7 @@ FROM logs*
 
 ## Explore #5 — Dashboards
 
-The deployer created a **Systems Operations Dashboard** (telemetry, RED/USE, APM, logs) for every scenario. For **Fanatics Collectibles**, there is also an **Executive Dashboard** with synthetic business KPIs (ad revenue, programmatic fill, betting handle, and sportsbook hold). Find them in:
+The deployer created a **Systems Operations Dashboard** (telemetry, RED/USE, APM, logs) for every scenario. For **Fanatics Collectibles**, there is also an **Executive Dashboard** with a broad leadership view: streaming and engagement, subscriptions and commerce, sponsorship and B2B data revenue, fantasy, wagering, CRM/loyalty, and health proxies (all synthetic). Find them in:
 
 **Elastic Serverless** tab → **Dashboards** → search **Fanatics** and open **Systems Operations** and **Executive** (or filter by title).
 
