@@ -715,14 +715,18 @@ echo "done"
 # The demo app runs on port 8090 (nginx owns 8080).
 # ─────────────────────────────────────────────────────────────────────────────
 
-DEMO_REPO="https://github.com/poulsbopete/elastic-launch-demo.git"
-DEMO_BRANCH="feat/back-navigation-noc-chaos"
+DEMO_REPO="https://github.com/notoriousbdg/elastic-launch-demo.git"
+DEMO_BRANCH="main"
 DEMO_DIR="/opt/elastic-launch-demo"
 DEMO_PORT=8090
 
-echo "Cloning elastic-launch-demo..."
-if [[ -d "$DEMO_DIR" ]]; then
-  git -C "$DEMO_DIR" pull --ff-only 2>/dev/null || true
+echo "Cloning or updating elastic-launch-demo..."
+if [[ -d "$DEMO_DIR/.git" ]]; then
+  git -C "$DEMO_DIR" remote set-url origin "$DEMO_REPO"
+  git -C "$DEMO_DIR" fetch origin "$DEMO_BRANCH"
+  git -C "$DEMO_DIR" checkout "$DEMO_BRANCH" 2>/dev/null \
+    || git -C "$DEMO_DIR" checkout -B "$DEMO_BRANCH" "origin/$DEMO_BRANCH"
+  git -C "$DEMO_DIR" pull --ff-only origin "$DEMO_BRANCH" 2>/dev/null || true
 else
   git clone --branch "$DEMO_BRANCH" "$DEMO_REPO" "$DEMO_DIR"
 fi

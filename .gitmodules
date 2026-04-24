@@ -1,0 +1,3 @@
+[submodule "elastic-launch-demo"]
+	path = elastic-launch-demo
+	url = https://github.com/notoriousbdg/elastic-launch-demo.git

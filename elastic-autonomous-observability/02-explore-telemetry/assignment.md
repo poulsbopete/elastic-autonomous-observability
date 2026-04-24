@@ -15,7 +15,7 @@ notes:
     - ✅ Query live logs with ES|QL in Discover
     - ✅ View distributed traces and service maps in APM
     - ✅ Inspect host metrics across 3 simulated cloud providers
-    - ✅ Explore the Executive Dashboard for the Fanatics scenario
+    - ✅ Explore the Systems Operations and Executive (revenue) dashboards for the Fanatics scenario
     - ✅ Run time-series ES|QL queries against live metric streams
 
     **Your data is real.** Every log, trace, and metric is generated fresh and shipped via OTLP directly to Elastic — no recordings, no synthetic replay.
@@ -268,8 +268,8 @@ FROM logs*
 
 ## Explore #5 — Dashboards
 
-The deployer created an **Executive Dashboard** pre-configured for your scenario. Find it in:
+The deployer created a **Systems Operations Dashboard** (telemetry, RED/USE, APM, logs) for every scenario. For **Fanatics Collectibles**, there is also an **Executive Dashboard** with synthetic business KPIs (ad revenue, programmatic fill, betting handle, and sportsbook hold). Find them in:
 
-**Elastic Serverless** tab → **Dashboards** → search "Fanatics" (or "Executive")
+**Elastic Serverless** tab → **Dashboards** → search **Fanatics** and open **Systems Operations** and **Executive** (or filter by title).
 
 ✅ **Ready to continue when** you've seen logs, traces, or metrics in Elastic Serverless and confirmed services are healthy.
