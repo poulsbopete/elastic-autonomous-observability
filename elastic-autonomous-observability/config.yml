@@ -7,6 +7,9 @@ virtualmachines:
     PRODUCT_TIER: complete
     PROJECT_TYPE: observability
     REGIONS: aws-us-east-1
+    # Dashboard split (Systems Ops + Fanatics Executive revenue) — revert to notoriousbdg/main when merged upstream
+    ELASTIC_LAUNCH_DEMO_REPO: https://github.com/poulsbopete/elastic-launch-demo.git
+    ELASTIC_LAUNCH_DEMO_BRANCH: feat/systems-ops-executive-dashboards
   memory: 12288
   cpus: 4
   allow_external_ingress:

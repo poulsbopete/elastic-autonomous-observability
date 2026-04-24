@@ -715,11 +715,13 @@ echo "done"
 # The demo app runs on port 8090 (nginx owns 8080).
 # ─────────────────────────────────────────────────────────────────────────────
 
-DEMO_REPO="https://github.com/notoriousbdg/elastic-launch-demo.git"
-DEMO_BRANCH="main"
+# Optional overrides (Instruqt host env from config.yml): point at a fork/branch until upstream merges.
+DEMO_REPO="${ELASTIC_LAUNCH_DEMO_REPO:-https://github.com/notoriousbdg/elastic-launch-demo.git}"
+DEMO_BRANCH="${ELASTIC_LAUNCH_DEMO_BRANCH:-main}"
 DEMO_DIR="/opt/elastic-launch-demo"
 DEMO_PORT=8090
 
+echo "elastic-launch-demo: repo=${DEMO_REPO} branch=${DEMO_BRANCH}"
 echo "Cloning or updating elastic-launch-demo..."
 if [[ -d "$DEMO_DIR/.git" ]]; then
   git -C "$DEMO_DIR" remote set-url origin "$DEMO_REPO"
