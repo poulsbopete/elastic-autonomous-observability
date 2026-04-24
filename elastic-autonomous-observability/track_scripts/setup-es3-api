@@ -767,6 +767,17 @@ else
   echo "Participant email resolved: $PARTICIPANT_EMAIL"
 fi
 
+# Demo app reads KIBANA_URL + ELASTIC_API_KEY for /api/setup/env-creds and one-click scenario launch.
+# Shell exports above are not visible to systemd unless we pass them in.
+if [[ -n "${KIBANA_URL:-}" && -n "${ELASTICSEARCH_API_KEY:-}" ]]; then
+  umask 077
+  printf '%s\n' "KIBANA_URL=${KIBANA_URL}" "ELASTIC_API_KEY=${ELASTICSEARCH_API_KEY}" > /etc/elastic-demo.env
+  chmod 600 /etc/elastic-demo.env
+  echo "Wrote /etc/elastic-demo.env for demo app credential discovery."
+else
+  echo "WARN: Missing KIBANA_URL or ELASTICSEARCH_API_KEY — /etc/elastic-demo.env not written; selector will require manual credentials."
+fi
+
 echo "Creating systemd service for demo app (port $DEMO_PORT)..."
 cat > /etc/systemd/system/elastic-demo.service <<EOF
 [Unit]
@@ -781,6 +792,7 @@ WorkingDirectory=${DEMO_DIR}
 Environment=PATH=${DEMO_DIR}/packages/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 Environment=PYTHONPATH=${DEMO_DIR}/packages
 Environment=OPERATOR_EMAIL=${PARTICIPANT_EMAIL}
+EnvironmentFile=-/etc/elastic-demo.env
 ExecStart=/usr/bin/python3 -m uvicorn app.main:app --host 0.0.0.0 --port ${DEMO_PORT}
 Restart=on-failure
 RestartSec=5

@@ -1,17 +1,27 @@
 ---
-description: Push Instruqt track after any change under elastic-autonomous-observability/
+description: Commit and push Instruqt track (and demo submodule) after lab-affecting changes
 alwaysApply: true
 ---
 
 # Instruqt track — always push
 
-Whenever you **add, edit, move, or delete** any file under `elastic-autonomous-observability/` (the Instruqt track: challenges, `track.yml`, `config.yml`, `track_scripts/`, etc.), **before you consider the task done** you must:
+Whenever you **add, edit, move, or delete** anything that affects the hosted lab, **before you consider the task done** you must get it onto Instruqt:
 
-1. Run from the repo root:
+## Scope (all of this counts)
+
+- **`elastic-autonomous-observability/`** — challenges, `track.yml`, `config.yml`, `track_scripts/`, etc.
+- **`elastic-launch-demo/`** (git submodule) — demo app, chaos UI, deployer, scenarios, selector, etc.
+
+## Steps (in order)
+
+1. **`elastic-launch-demo`:** If there are local changes, commit on its current branch and **`git push`** its `origin` so the submodule SHA is published.
+2. **Parent repo:** `git add` including the updated submodule pointer, `track_scripts/`, and `elastic-autonomous-observability/` as needed; **commit** and **`git push origin`** (or your default remote for `main`).
+3. **Instruqt:** From repo root run:
    ```bash
-   cd elastic-autonomous-observability && instruqt track push --force
+   ./scripts/instruqt-track-push.sh
    ```
-2. If Instruqt updates `elastic-autonomous-observability/track.yml` (checksum line), **commit that change** with message: `Sync track.yml checksum after Instruqt push`.
+   (That runs `instruqt track push --force` from `elastic-autonomous-observability/`.)
+4. If Instruqt updates `elastic-autonomous-observability/track.yml` (checksum line), **commit** that change with message: `Sync track.yml checksum after Instruqt push`, then **`git push`** and re-run **`./scripts/instruqt-track-push.sh`** if the platform requires the checksum in git before accepting the track.
 
 If `instruqt track push` fails (auth, network, remote drift), retry once with `--force`; if it still fails, say so clearly and leave `*.remote` conflict files untouched unless you are explicitly merging a pull.
 
