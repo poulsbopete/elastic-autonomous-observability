@@ -256,8 +256,8 @@ FROM logs*
 
 ## Explore #5 — Dashboards
 
-The deployer created a **Systems Operations Dashboard** (telemetry, RED/USE, APM, logs) for every scenario. For **Fanatics Collectibles**, there is also an **Executive Dashboard** with a broad leadership view: streaming and engagement, subscriptions and commerce, sponsorship and B2B data revenue, fantasy, wagering, CRM/loyalty, and health proxies (all synthetic). Find them in:
+The deployer created two Kibana dashboards for **every** scenario: **Systems Operations** (telemetry, RED/USE, APM, logs) and **Executive** (synthetic senior-leadership KPIs — audience, monetization, partners, health proxies — emitted from one designated service per scenario). Find them in:
 
-**Elastic Serverless** tab → **Dashboards** → search **Fanatics** and open **Systems Operations** and **Executive** (or filter by title).
+**Elastic Serverless** tab → **Dashboards** → search your scenario name and open **Systems Operations** and **Executive** (saved object id ends in `-exec-dashboard` and `-business-exec-dashboard`).
 
 ✅ **Ready to continue when** you've seen logs, traces, or metrics in Elastic Serverless and confirmed services are healthy.
