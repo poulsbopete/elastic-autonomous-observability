@@ -11,11 +11,19 @@ Send logs, metrics, and traces via OpenTelemetry to Elastic Serverless; correlat
 
 ## Pushing to Instruqt
 
-From the track directory:
+From the repo root (recommended):
 
 ```bash
-instruqt track push
+./scripts/instruqt-track-push.sh
 ```
+
+Or from the track directory:
+
+```bash
+cd elastic-autonomous-observability && instruqt track push --force
+```
+
+The Cursor rule **Instruqt track — always push** reminds the agent to run a push after any change under `elastic-autonomous-observability/`.
 
 Use a track pulled from Instruqt (with challenge dirs like `01-untitled-challenge-xxx`) so directory names match the server.
 
