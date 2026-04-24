@@ -441,15 +441,7 @@
   <div class="card-grid cols-2" style="margin-top:0.8em;">
     <div class="card accent-yellow">
       <div class="card-title">🖥️ Demo App</div>
-      <div class="card-body">Scenario selector — overview and live deployment status of all 9 microservices.</div>
-    </div>
-    <div class="card">
-      <div class="card-title">📊 Live Dashboard</div>
-      <div class="card-body">Real-time service health across all 9 microservices. Watch the telemetry flow.</div>
-    </div>
-    <div class="card">
-      <div class="card-title">⚡ Chaos Controller</div>
-      <div class="card-body">20 fault channels ready to inject — you'll use this in Lab 3.</div>
+      <div class="card-body">Scenario selector, deployment status, Kibana dashboard shortcuts, and <strong>Chaos</strong> (fault injection) from the active deployment — all in one place.</div>
     </div>
     <div class="card accent-blue">
       <div class="card-title">☁️ Elastic Serverless</div>
@@ -466,7 +458,7 @@
   <aside class="notes">
     Setup takes 3-4 minutes while the wait screen is showing.
     When learners arrive at the challenge, everything is already running.
-    Point them to each tab and let them explore freely.
+    Point them to the Demo App and Elastic Serverless tabs and let them explore freely.
   </aside>
 </section>
 
@@ -518,8 +510,8 @@ FROM logs-*
     <li>
       <div class="step-num yellow">1</div>
       <div>
-        <strong>Open the Chaos Controller tab</strong><br>
-        <span style="color:var(--text-muted);">Choose any fault channel (e.g. CH-07: WiFi AP Disconnect Storm). Select a fault mode and click <strong>Inject Fault</strong>.</span>
+        <strong>Open the Demo App → Chaos</strong><br>
+        <span style="color:var(--text-muted);">On your running deployment, click <strong>Chaos</strong>. Choose any fault channel (e.g. CH-07: WiFi AP Disconnect Storm), select a fault mode, and click <strong>Inject Fault</strong>.</span>
       </div>
     </li>
     <li>
@@ -560,7 +552,7 @@ FROM logs-*
     <div class="flow-step">
       <span class="fs-icon">⚡</span>
       <div class="fs-label">Fault Injected</div>
-      <div class="fs-sub">Chaos Controller</div>
+      <div class="fs-sub">Demo App → Chaos</div>
     </div>
     <div class="flow-arrow">▶</div>
     <div class="flow-step">

@@ -84,18 +84,6 @@ tabs:
   hostname: es3-api
   path: /
   port: 8090
-- id: psndlghpu8vz
-  title: Live Dashboard
-  type: service
-  hostname: es3-api
-  path: /dashboard
-  port: 8090
-- id: fcgypzb3jfps
-  title: Chaos Controller
-  type: service
-  hostname: es3-api
-  path: /chaos
-  port: 8090
 - id: dz2mxkupn9oy
   title: Elastic Serverless
   type: service
@@ -124,13 +112,7 @@ Everything was **automatically provisioned** when this lab started — your Elas
 
 ## Explore the Demo App
 
-Use the three Demo App tabs to explore the running scenario:
-
-| Tab | What you'll see |
-|-----|----------------|
-| **Demo App** | Scenario selector — overview and deployment status |
-| **Live Dashboard** | Real-time service health across all 9 microservices |
-| **Chaos Controller** | 20 fault channels ready to inject — you'll use this in Lab 3 |
+Open the **Demo App** tab: choose a scenario, launch a deployment, and use the banner on an active run for **Systems Operations** / **Executive** Kibana links and the **Chaos** button (fault injection opens from there — no separate browser tab needed).
 
 ---
 

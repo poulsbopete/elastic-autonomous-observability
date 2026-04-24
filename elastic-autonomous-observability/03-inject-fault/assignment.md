@@ -74,18 +74,6 @@ tabs:
   hostname: es3-api
   path: /
   port: 8090
-- id: g6m7hqsfy8nc
-  title: Live Dashboard
-  type: service
-  hostname: es3-api
-  path: /dashboard
-  port: 8090
-- id: mqpqw4xybxgp
-  title: Chaos Controller
-  type: service
-  hostname: es3-api
-  path: /chaos
-  port: 8090
 - id: jhbi4afnff98
   title: Elastic Serverless
   type: service
@@ -114,7 +102,7 @@ Trigger a fault from the **Demo App**, then watch Elastic automatically investig
 
 ## Step 1 — Inject a Fault
 
-1. Open the **Chaos Controller** tab
+1. Open the **Demo App** tab. On your running deployment, click **Chaos** (opens the incident simulator).
 2. Select any fault channel and click **Inject Fault**
 
 > **Recommended:** Start with **Channel 12 — Auction Bid Latency Spike** for the clearest end-to-end demo.
