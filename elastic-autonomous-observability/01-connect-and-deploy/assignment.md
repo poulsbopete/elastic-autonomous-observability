@@ -50,7 +50,7 @@ notes:
     | **Alert rules** | 20 ES\|QL rules — one per fault channel, 30s interval |
     | **AI agent** | Investigation tools + system prompt |
     | **Workflows** | Alert → investigate → create case → remediate |
-    | **Dashboards** | Systems Operations dashboard (+ Fanatics Executive revenue dashboard) + OTel signal dashboards |
+    | **Dashboards** | Systems Operations + Executive (leadership KPIs) per scenario + OTel signal dashboards |
     | **Data views** | `logs.otel`, `metrics-*`, `traces-*` |
 
     This is the same stack you'd deploy in production — configured in code, repeatable, version-controlled.
@@ -137,7 +137,7 @@ Click the **Elastic Serverless** tab — you're already logged in. Navigate to:
 | Alert rules | 20 ES\|QL rules — one per fault channel, 30s interval |
 | AI agent | Investigation tools + system prompt |
 | Workflows | Alert → investigate → create case → remediate |
-| Dashboards | Systems Operations (+ Fanatics Executive revenue) + OTel signal dashboards |
+| Dashboards | Systems Operations + Executive (all scenarios) + OTel signal dashboards |
 | SLOs | 21 SLOs auto-created across all services |
 | Data views | `logs.otel`, `logs.otel.*`, `metrics-*` |
 
