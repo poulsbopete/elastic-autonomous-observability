@@ -331,6 +331,51 @@
       background: radial-gradient(circle, rgba(0,191,179,0.07) 0%, transparent 70%);
       pointer-events: none;
     }
+
+    /* Executive dashboard hero image */
+    .exec-dash-shot {
+      display: block;
+      width: 100%;
+      height: auto;
+      max-height: min(50vh, 480px);
+      margin: 0.35em auto 0;
+      object-fit: contain;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      box-shadow: 0 16px 48px rgba(0, 0, 0, 0.45);
+      background: #fff;
+    }
+    .slide-exec-dash h2 { font-size: 1.05em; line-height: 1.15; }
+    .slide-exec-dash .subtitle { margin-bottom: 0.25em; }
+
+    /* AE selling points — compact infographic grid */
+    .ae-infographic .infographic-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-top: 0.45em;
+    }
+    .ae-infographic .ig-cell {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 0.55em 0.65em;
+      text-align: center;
+    }
+    .ae-infographic .ig-icon { font-size: 1.25em; margin-bottom: 0.15em; line-height: 1; }
+    .ae-infographic .ig-title {
+      font-size: 0.48em;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 0.25em;
+      line-height: 1.25;
+    }
+    .ae-infographic .ig-body {
+      font-size: 0.38em;
+      color: var(--text-muted);
+      line-height: 1.35;
+    }
+    .ae-infographic h2 { font-size: 1.12em; }
   </style>
 </head>
 
@@ -389,6 +434,73 @@
   <aside class="notes">
     Play this video to show the end-to-end loop: fault injection → ES|QL alert → workflow execution → AI agent → case closed.
     Use F to go fullscreen on the video itself if needed.
+  </aside>
+</section>
+
+<!-- ── Executive dashboard (screenshot) ───────────────────────────── -->
+<section class="slide-dense slide-exec-dash">
+  <div class="kicker">Leadership-ready proof</div>
+  <h2>Executive dashboard — business KPIs beside ops telemetry</h2>
+  <div class="divider"></div>
+  <p class="subtitle" style="font-size:0.48em;">Same Serverless Observability project: commerce, ticketing, sponsorship, CRM &amp; churn proxies — driven by live <code style="font-size:0.92em;">business.*</code> OTLP metrics from the demo.</p>
+  <img
+    src="assets/executive-dashboard-fanatics.png"
+    alt="Fanatics Collectibles Executive dashboard in Elastic: KPI tiles for GMV, MRR, betting handle, churn risk, and trend charts"
+    class="exec-dash-shot"
+    width="1200"
+    height="675"
+    loading="lazy"
+    decoding="async"
+  />
+
+  <aside class="notes">
+    Use this slide with AEs: it proves Elastic Observability is not only RED metrics — leadership can see revenue-style KPIs in Kibana.
+    Pair with Systems Operations for engineering credibility on the same deployment.
+  </aside>
+</section>
+
+<!-- ── AE infographic: why Serverless O11y ─────────────────────────── -->
+<section class="slide-dense ae-infographic">
+  <div class="kicker">Elastic Serverless Observability</div>
+  <h2>Why AEs can sell this with confidence</h2>
+  <div class="divider"></div>
+
+  <div class="infographic-grid">
+    <div class="ig-cell">
+      <div class="ig-icon">☁️</div>
+      <div class="ig-title">Fully managed</div>
+      <div class="ig-body">No clusters to size or upgrade — Elastic operates ingest &amp; UI; customers pay for use.</div>
+    </div>
+    <div class="ig-cell">
+      <div class="ig-icon">📡</div>
+      <div class="ig-title">OpenTelemetry-native</div>
+      <div class="ig-body">OTLP in — aligns with Kubernetes &amp; cloud standards buyers already adopt.</div>
+    </div>
+    <div class="ig-cell">
+      <div class="ig-icon">🧠</div>
+      <div class="ig-title">AI &amp; workflows built-in</div>
+      <div class="ig-body">Alert → investigate → case → remediation — differentiated automation story.</div>
+    </div>
+    <div class="ig-cell">
+      <div class="ig-icon">📊</div>
+      <div class="ig-title">ES|QL everywhere</div>
+      <div class="ig-body">One language for logs, metrics, traces &amp; alerting — faster POCs, fewer tools.</div>
+    </div>
+    <div class="ig-cell">
+      <div class="ig-icon">💼</div>
+      <div class="ig-title">Executive + engineering</div>
+      <div class="ig-body">Business KPI dashboards alongside service health — CFO &amp; SRE win together.</div>
+    </div>
+    <div class="ig-cell">
+      <div class="ig-icon">🔒</div>
+      <div class="ig-title">Elastic Cloud trust</div>
+      <div class="ig-body">Elastic-hosted isolation &amp; updates — enterprise procurement-friendly.</div>
+    </div>
+  </div>
+
+  <aside class="notes">
+    Adjust talking points by vertical. Lead with Executive screenshot slide for business stakeholders,
+    then this infographic for technical + economic objections. Offer the hands-on track as proof.
   </aside>
 </section>
 
