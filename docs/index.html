@@ -348,34 +348,64 @@
     .slide-exec-dash h2 { font-size: 1.05em; line-height: 1.15; }
     .slide-exec-dash .subtitle { margin-bottom: 0.25em; }
 
-    /* AE selling points — compact infographic grid */
-    .ae-infographic .infographic-grid {
+    /* “By the numbers” — AE-facing pillar infographic */
+    .slide-o11y-numbers .pillar-grid {
       display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 10px;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
       margin-top: 0.45em;
     }
-    .ae-infographic .ig-cell {
+    .slide-o11y-numbers .pillar {
       background: var(--bg-card);
       border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 0.55em 0.65em;
-      text-align: center;
+      border-radius: 12px;
+      padding: 0.65em 0.75em 0.75em;
+      text-align: left;
+      position: relative;
+      overflow: hidden;
     }
-    .ae-infographic .ig-icon { font-size: 1.25em; margin-bottom: 0.15em; line-height: 1; }
-    .ae-infographic .ig-title {
-      font-size: 0.48em;
+    .slide-o11y-numbers .pillar::before {
+      content: '';
+      position: absolute;
+      left: 0; top: 0; bottom: 0;
+      width: 4px;
+      background: linear-gradient(180deg, var(--elastic-yellow), var(--elastic-green));
+      opacity: 0.85;
+    }
+    .slide-o11y-numbers .pillar-tag {
+      display: inline-block;
+      font-size: 0.34em;
       font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--elastic-yellow);
+      margin-bottom: 0.35em;
+    }
+    .slide-o11y-numbers .pillar-stat {
+      font-size: 1.15em;
+      font-weight: 800;
       color: #fff;
-      margin-bottom: 0.25em;
-      line-height: 1.25;
+      line-height: 1.05;
+      letter-spacing: -0.02em;
     }
-    .ae-infographic .ig-body {
-      font-size: 0.38em;
+    .slide-o11y-numbers .pillar-stat em {
+      font-style: normal;
+      color: var(--elastic-yellow);
+    }
+    .slide-o11y-numbers .pillar-copy {
+      font-size: 0.4em;
       color: var(--text-muted);
-      line-height: 1.35;
+      line-height: 1.4;
+      margin-top: 0.45em;
     }
-    .ae-infographic h2 { font-size: 1.12em; }
+    .slide-o11y-numbers .numbers-foot {
+      font-size: 0.32em;
+      color: var(--text-muted);
+      margin-top: 0.55em;
+      line-height: 1.45;
+      opacity: 0.92;
+    }
+    .slide-o11y-numbers h2 { font-size: 1.05em; line-height: 1.2; }
   </style>
 </head>
 
@@ -459,48 +489,47 @@
   </aside>
 </section>
 
-<!-- ── AE infographic: why Serverless O11y ─────────────────────────── -->
-<section class="slide-dense ae-infographic">
+<!-- ── Why Serverless O11y — by the numbers (AE infographic) ───────── -->
+<section class="slide-dense slide-o11y-numbers">
   <div class="kicker">Elastic Serverless Observability</div>
-  <h2>Why AEs can sell this with confidence</h2>
+  <h2>By the numbers — why AEs lead with this story</h2>
   <div class="divider"></div>
+  <p class="subtitle" style="font-size:0.46em;margin-bottom:0.35em;">
+    Infographics live here on this deck (after the Executive screenshot): <strong class="hl-yellow">save</strong> with managed Serverless,
+    <strong class="hl-green">enrich</strong> cases via agent-to-agent Security context, <strong class="hl-pink">measure</strong> business KPIs beside traces &amp; logs — then show compound value <strong>over time</strong>.
+  </p>
 
-  <div class="infographic-grid">
-    <div class="ig-cell">
-      <div class="ig-icon">☁️</div>
-      <div class="ig-title">Fully managed</div>
-      <div class="ig-body">No clusters to size or upgrade — Elastic operates ingest &amp; UI; customers pay for use.</div>
+  <div class="pillar-grid">
+    <div class="pillar">
+      <div class="pillar-tag">Save · Serverless</div>
+      <div class="pillar-stat"><em>$0</em> Elasticsearch clusters to run</div>
+      <div class="pillar-copy">No shard math, version hops, or capacity weekends — teams fund innovation instead of operating search plumbing. Consumption-based pricing aligns spend to real usage.</div>
     </div>
-    <div class="ig-cell">
-      <div class="ig-icon">📡</div>
-      <div class="ig-title">OpenTelemetry-native</div>
-      <div class="ig-body">OTLP in — aligns with Kubernetes &amp; cloud standards buyers already adopt.</div>
+    <div class="pillar">
+      <div class="pillar-tag">Enrich · A2A → Security</div>
+      <div class="pillar-stat">1 shared Elastic stack</div>
+      <div class="pillar-copy">Roadmap: agent-to-agent handoff into <strong>Elastic Security</strong> on Serverless — alerts, entities, and TI-style context appended to Observability cases without swivel-chair workflows.</div>
     </div>
-    <div class="ig-cell">
-      <div class="ig-icon">🧠</div>
-      <div class="ig-title">AI &amp; workflows built-in</div>
-      <div class="ig-body">Alert → investigate → case → remediation — differentiated automation story.</div>
+    <div class="pillar">
+      <div class="pillar-tag">Identify · Business KPIs</div>
+      <div class="pillar-stat"><em>24+</em> leadership metrics</div>
+      <div class="pillar-copy">Executive dashboard ties OTel <code style="font-size:0.95em;">business.*</code> gauges to revenue, audience, partner, and churn proxies — same store as RED/USE and traces.</div>
     </div>
-    <div class="ig-cell">
-      <div class="ig-icon">📊</div>
-      <div class="ig-title">ES|QL everywhere</div>
-      <div class="ig-body">One language for logs, metrics, traces &amp; alerting — faster POCs, fewer tools.</div>
-    </div>
-    <div class="ig-cell">
-      <div class="ig-icon">💼</div>
-      <div class="ig-title">Executive + engineering</div>
-      <div class="ig-body">Business KPI dashboards alongside service health — CFO &amp; SRE win together.</div>
-    </div>
-    <div class="ig-cell">
-      <div class="ig-icon">🔒</div>
-      <div class="ig-title">Elastic Cloud trust</div>
-      <div class="ig-body">Elastic-hosted isolation &amp; updates — enterprise procurement-friendly.</div>
+    <div class="pillar">
+      <div class="pillar-tag">Over time · Efficiency</div>
+      <div class="pillar-stat"><em>↓ 30–50%</em> MTTR target*</div>
+      <div class="pillar-copy">Automation (ES|QL → workflows → AI → cases) targets dramatically faster restoration vs manual bridge calls — compound savings every quarter as runbooks codify.</div>
     </div>
   </div>
 
+  <p class="numbers-foot">
+    * Illustrative range for customer business cases — replace with account-specific ROI from Elastic value assessments; not a guarantee.
+  </p>
+
   <aside class="notes">
-    Adjust talking points by vertical. Lead with Executive screenshot slide for business stakeholders,
-    then this infographic for technical + economic objections. Offer the hands-on track as proof.
+    Location: GitHub Pages deck, slide after Executive screenshot. Use this as the AE “air cover” slide before demo / Instruqt.
+    Emphasize Serverless saves operational drag, Security A2A is roadmap positioning, KPI slide ties CFO conversations,
+    MTTR band is a planning anchor until you have customer metrics.
   </aside>
 </section>
 
