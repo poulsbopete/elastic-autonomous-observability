@@ -224,8 +224,9 @@
     .svc.cloud-azure  { border-color: rgba(0,120,212,0.4);   color: #66B2FF; }
 
     /* Stats row */
-    .stat-row { display: flex; gap: 12px; margin-top: 0.6em; }
+    .stat-row { display: flex; gap: 12px; margin-top: 0.6em; flex-wrap: wrap; }
     .stat-box {
+      min-width: 90px;
       background: var(--bg-card);
       border: 1px solid var(--border);
       border-radius: 10px;
@@ -284,19 +285,21 @@
   <h1>Autonomous<br>Observability</h1>
   <div class="divider" style="margin:0.6em auto;"></div>
   <p class="subtitle" style="text-align:center;">
-    From alert to root cause to fix —<br>
-    <span class="hl-yellow">with no human intervention required.</span>
+    Tie technical signals to <span class="hl-yellow">business KPIs and revenue risk</span> — then automate investigation<br>
+    from alert → root cause → fix with minimal human intervention.
   </p>
   <div style="margin-top:1.5em;display:flex;justify-content:center;gap:8px;">
     <span class="tag tag-yellow">ES|QL</span>
     <span class="tag tag-blue">AI Workflows</span>
     <span class="tag tag-green">OpenTelemetry</span>
-    <span class="tag tag-pink">SLOs</span>
+    <span class="tag tag-pink">Executive KPIs</span>
     <span class="tag tag-purple">Hands-On Lab</span>
   </div>
 
   <aside class="notes">
     Welcome to the Elastic Autonomous Observability workshop.
+    Emphasize that learners connect ops telemetry to leadership-style KPIs (Executive dashboard)
+    and see how incidents map to revenue / audience / partner proxies — not only RED metrics.
     Today you'll wire real OpenTelemetry telemetry into Elastic Cloud,
     inject realistic faults, and watch the AI agent investigate and remediate —
     automatically.
@@ -343,6 +346,11 @@
       <div class="card-title">MTTR is too high</div>
       <div class="card-body">Average incident response takes 30+ minutes. Most of that time is data gathering, not fixing.</div>
     </div>
+    <div class="card accent-pink">
+      <div class="card-icon">💵</div>
+      <div class="card-title">Business blind spots</div>
+      <div class="card-body">Engineering sees latency curves while revenue, audience, and partner KPIs live in another silo — until something breaks loudly.</div>
+    </div>
     <div class="card accent-yellow">
       <div class="card-icon">🔗</div>
       <div class="card-title">Cross-cloud complexity</div>
@@ -365,7 +373,7 @@
   <div class="kicker">Your lab environment</div>
   <h2>Fanatics Collectibles — Live Demo Platform</h2>
   <div class="divider"></div>
-  <p class="subtitle">9 simulated microservices across three clouds, emitting real OpenTelemetry signals.</p>
+  <p class="subtitle">9 simulated microservices across three clouds, emitting real OpenTelemetry signals — plus <strong>synthetic business KPIs</strong> (audience, monetization, partners, retention proxies) on the Executive dashboard.</p>
 
   <div class="service-grid" style="margin-top:0.8em;">
     <span class="svc cloud-aws">🟠 auction-engine <small>(AWS)</small></span>
@@ -385,8 +393,12 @@
     <div class="stat-box"><div class="stat-num">20</div><div class="stat-label">Fault Channels</div></div>
     <div class="stat-box"><div class="stat-num">4</div><div class="stat-label">AI Workflows</div></div>
     <div class="stat-box"><div class="stat-num">21+</div><div class="stat-label">Auto-SLOs</div></div>
+    <div class="stat-box"><div class="stat-num">24+</div><div class="stat-label">Business KPIs</div></div>
   </div>
 
+  <p class="subtitle" style="margin-top:0.8em;font-size:0.52em;">
+    Open <strong>Dashboards</strong> → <strong>Executive</strong> for revenue-style leadership metrics and <strong>Systems Operations</strong> for RED/USE + traces — same incident, two lenses.
+  </p>
   <aside class="notes">
     Fanatics is a real collectibles marketplace. Our scenario simulates the core microservices
     with realistic OpenTelemetry traces, logs, and metrics. All traffic is synthetic but
@@ -412,14 +424,14 @@
       <div class="step-num blue">2</div>
       <div>
         <strong style="font-size:1.1em;">Explore Telemetry with ES|QL</strong><br>
-        <span style="color:var(--text-muted);">Query live logs, traces, and infrastructure metrics using ES|QL. Explore APM service maps, SLO dashboards, and time-series anomaly detection.</span>
+        <span style="color:var(--text-muted);">Query live logs and metrics with ES|QL; explore <strong>Executive</strong> business KPIs alongside APM, infrastructure, and SLO views.</span>
       </div>
     </li>
     <li>
       <div class="step-num green">3</div>
       <div>
         <strong style="font-size:1.1em;">Inject a Fault &amp; Watch Elastic Detect It</strong><br>
-        <span style="color:var(--text-muted);">Pick a fault channel, inject it, and watch ES|QL alert rules fire within 30 seconds. Observe the AI agent investigate autonomously and create a resolved case.</span>
+        <span style="color:var(--text-muted);">Pick a fault channel, inject it, and watch ES|QL alert rules fire. Cases and workflows increasingly frame <strong>revenue / audience impact</strong> alongside technical RCA — the north star for prioritization.</span>
       </div>
     </li>
   </ul>
@@ -450,6 +462,7 @@
   </div>
 
   <ul class="check-list" style="margin-top:0.8em;">
+    <li>Open <strong>Dashboards</strong> → <strong>Executive</strong> (business KPIs) and <strong>Systems Operations</strong> (service health)</li>
     <li>Navigate to Applications → Service Inventory (7 services)</li>
     <li>Explore Observability → SLOs (21 auto-created SLOs)</li>
     <li>Check Observability → Workflows (4 AI workflows)</li>
@@ -478,18 +491,22 @@ FROM logs-*
 | SORT error_count DESC
 | LIMIT 10</code></pre>
 
-  <div class="card-grid cols-3" style="margin-top:0.8em;">
+  <div class="card-grid cols-2" style="margin-top:0.8em;">
+    <div class="card accent-pink">
+      <div class="card-title">📊 Executive KPIs</div>
+      <div class="card-body">Leadership-style dashboard: audience scale, monetization &amp; betting proxies, partnerships, churn/NPS-style signals — emitted as <code style="font-size:0.95em;">business.*</code> OTLP metrics.</div>
+    </div>
     <div class="card">
-      <div class="card-title">📈 Time Series</div>
-      <div class="card-body">Query log and metric trends with BUCKET() aggregations. See error rate over time.</div>
+      <div class="card-title">📈 ES|QL on telemetry</div>
+      <div class="card-body">Slice logs and <code style="font-size:0.95em;">metrics*</code> in Discover — correlate error spikes with KPI trends.</div>
     </div>
     <div class="card accent-green">
       <div class="card-title">🗺️ APM Service Map</div>
-      <div class="card-body">Visualize distributed traces across all 9 services and 3 cloud providers.</div>
+      <div class="card-body">Distributed traces across services and clouds.</div>
     </div>
     <div class="card">
       <div class="card-title">🏗️ Infrastructure</div>
-      <div class="card-body">3 simulated hosts (AWS, GCP, Azure) with CPU, memory, and disk metrics.</div>
+      <div class="card-body">Simulated hosts (AWS, GCP, Azure) with CPU, memory, disk metrics.</div>
     </div>
   </div>
 
@@ -532,13 +549,14 @@ FROM logs-*
       <div class="step-num pink">4</div>
       <div>
         <strong>Review the auto-created Case</strong><br>
-        <span style="color:var(--text-muted);">Navigate to <strong>Observability → Cases</strong>. The AI agent created and resolved a case — with RCA, affected services, and recommended actions.</span>
+        <span style="color:var(--text-muted);">Navigate to <strong>Observability → Cases</strong>. The workflow opens a case with RCA and remediation narrative — we're evolving toward explicit <strong>revenue / KPI exposure</strong> in case descriptions so responders prioritize what hurts the business, not only error counts.</span>
       </div>
     </li>
   </ul>
 
   <aside class="notes">
     This is the money slide. The entire sequence — fault → alert → workflow → AI agent → case — happens in under 5 minutes with zero human intervention.
+    Call out the product direction: cases that cite <strong>revenue / audience impact</strong> (not only stack traces) and, on the horizon, handoff to Security for threat context.
   </aside>
 </section>
 
@@ -582,7 +600,7 @@ FROM logs-*
     <div class="flow-step" style="border-color:rgba(240,78,152,0.4);">
       <span class="fs-icon">✅</span>
       <div class="fs-label">Case Closed</div>
-      <div class="fs-sub">RCA + Actions</div>
+      <div class="fs-sub">RCA + biz metrics context</div>
     </div>
   </div>
 
@@ -593,13 +611,37 @@ FROM logs-*
     </div>
     <div class="card accent-blue">
       <div class="card-title">AI Agent Tools</div>
-      <div class="card-body">The agent has access to ES|QL search, SLO status, APM traces, and case management — it builds a full picture before acting.</div>
+      <div class="card-body">The agent pulls ES|QL, SLO status, APM traces, and cases — with room to layer <strong>business KPI signals</strong> into prioritization as workflows evolve.</div>
     </div>
   </div>
 
   <aside class="notes">
     The key insight: no human touches the keyboard between fault injection and case resolution.
     The ES|QL alert rule fires in ~30 seconds. The workflow and AI agent finish in 2-4 minutes.
+  </aside>
+</section>
+
+<!-- ── SLIDE: Roadmap — business + Security enrichment ──────────────── -->
+<section>
+  <div class="kicker">On the horizon</div>
+  <h2>Revenue-aware cases &amp; Security handoff</h2>
+  <div class="divider"></div>
+  <p class="subtitle">We are tightening the loop between <span class="hl-yellow">technical RCA</span>, <span class="hl-pink">business KPIs</span> (Executive metrics, estimated revenue / audience exposure in case text), and — next — <span class="hl-blue">security-relevant context</span> for the same incident.</p>
+
+  <div class="card-grid cols-2" style="margin-top:0.8em;">
+    <div class="card accent-yellow">
+      <div class="card-title">Cases with revenue language</div>
+      <div class="card-body">Workflows and case templates will increasingly summarize <strong>which KPIs move</strong> when a service degrades, so responders align fixes with money and trust — not only CPU graphs.</div>
+    </div>
+    <div class="card accent-green">
+      <div class="card-title">Elastic Security (agent-to-agent)</div>
+      <div class="card-body">Planned: invoke or <strong>simulate an agent-to-agent call</strong> into <strong>Elastic Security</strong> on Serverless — enriching Observability cases with alerts, entities, or TI-style findings — without leaving Kibana's autonomous loop.</div>
+    </div>
+  </div>
+
+  <aside class="notes">
+    Set expectations: Security enrichment is a roadmap item — position as architecture direction for instructors,
+    not something every learner completes today. Tie back to Executive KPIs as the business anchor for case prioritization.
   </aside>
 </section>
 
