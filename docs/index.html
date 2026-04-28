@@ -55,6 +55,37 @@
 
     .reveal section { text-align: left; }
 
+    /* Prevent clipping when a slide has many cards (scroll inside the slide) */
+    .reveal .slides > section:not(.slide-title):not(.slide-video) {
+      overflow-y: auto !important;
+      overflow-x: hidden;
+      box-sizing: border-box;
+      padding: 0.2rem 0.45rem 3.25rem;
+      max-height: 100%;
+    }
+    .reveal .slides > section.slide-title,
+    .reveal .slides > section.slide-video {
+      overflow: hidden !important;
+      padding: 0;
+    }
+    .reveal .slides > section:not(.slide-title):not(.slide-video)::-webkit-scrollbar {
+      width: 8px;
+    }
+    .reveal .slides > section:not(.slide-title):not(.slide-video)::-webkit-scrollbar-thumb {
+      background: rgba(255,255,255,0.18);
+      border-radius: 4px;
+    }
+
+    /* Compact layout for the “problem statement” grid */
+    .slide-dense .card-grid { gap: 10px; margin-top: 0.35em; }
+    .slide-dense .card { padding: 0.55em 0.75em; }
+    .slide-dense .card .card-icon { font-size: 1.15em; margin-bottom: 0.12em; }
+    .slide-dense .card .card-title { font-size: 0.52em; margin-bottom: 0.22em; }
+    .slide-dense .card .card-body { font-size: 0.42em; line-height: 1.35; }
+    .slide-dense h2 { font-size: 1.15em; line-height: 1.15; margin-bottom: 0.15em; }
+    .slide-dense .divider { margin: 0.35em 0; }
+    .slide-dense .kicker { margin-bottom: 0.35em; }
+
     .reveal .slides section.center { text-align: center; }
 
     /* Elastic logo bar */
@@ -307,7 +338,7 @@
 </section>
 
 <!-- ── SLIDE 2: Video Demo ───────────────────────────────────────────── -->
-<section class="center" data-background="#000">
+<section class="center slide-video" data-background="#000">
   <div class="kicker" style="text-align:center;">See it in action</div>
   <h2 style="text-align:center;margin-bottom:0.6em;">Autonomous Observability in 60 Seconds</h2>
 
@@ -329,8 +360,7 @@
   </aside>
 </section>
 
-<!-- ── SLIDE 3: The Problem ──────────────────────────────────────────── -->
-<section>
+<section class="slide-dense">
   <div class="kicker">Why we're here</div>
   <h2>Modern systems are too complex<br>to observe manually</h2>
   <div class="divider"></div>
@@ -777,7 +807,7 @@ FROM logs-*
     backgroundTransition: 'fade',
     width: 1280,
     height: 720,
-    margin: 0.04,
+    margin: 0.02,
     plugins: []
   });
 </script>
