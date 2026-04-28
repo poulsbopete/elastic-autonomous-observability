@@ -104,6 +104,19 @@
     .slide-dense .divider { margin: 0.35em 0; }
     .slide-dense .kicker { margin-bottom: 0.35em; }
 
+    /* Lab 2 — ES|QL + cards: code block eats vertical space */
+    .slide-esql h2 { font-size: 1.12em; margin-bottom: 0.2em; }
+    .slide-esql .divider { margin: 0.3em 0; }
+    .slide-esql .subtitle { font-size: 0.52em; margin: 0 0 0.4em; line-height: 1.35; }
+    .slide-esql pre { margin: 0.25em 0 0.45em; }
+    .slide-esql pre code {
+      font-size: 0.34em !important;
+      padding: 0.55em 0.65em !important;
+      line-height: 1.4 !important;
+    }
+    .slide-esql.slide-dense .card-grid { margin-top: 0.3em; gap: 8px; }
+    .slide-esql.slide-dense .card .card-body { font-size: 0.38em; }
+
     .reveal .slides section.center { text-align: center; }
 
     /* Elastic logo bar */
@@ -525,7 +538,7 @@
 </section>
 
 <!-- ── SLIDE 6: Lab 2 ─────────────────────────────────────────────────── -->
-<section>
+<section class="slide-dense slide-esql">
   <div class="kicker">Lab 2</div>
   <h2>Explore Telemetry with ES|QL</h2>
   <div class="divider"></div>
