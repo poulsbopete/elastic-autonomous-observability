@@ -63,15 +63,33 @@
       padding: 0.2rem 0.45rem 3.25rem;
       max-height: 100%;
     }
-    .reveal .slides > section.slide-title,
-    .reveal .slides > section.slide-video {
+    .reveal .slides > section.slide-title {
       overflow: hidden !important;
       padding: 0;
     }
-    .reveal .slides > section:not(.slide-title):not(.slide-video)::-webkit-scrollbar {
+    /* Video slide: must not clip native controls — allow scroll on short viewports */
+    .reveal .slides > section.slide-video {
+      overflow-y: auto !important;
+      overflow-x: hidden;
+      box-sizing: border-box;
+      padding: 0.35rem 0.75rem 3.25rem;
+      max-height: 100%;
+    }
+    .slide-video .kicker { margin-bottom: 0.25em; }
+    .slide-video h2 { font-size: 1.15em; margin-bottom: 0.35em !important; }
+    .slide-video video {
+      display: block;
+      width: 100%;
+      height: auto;
+      max-height: min(420px, 48vh);
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,0.1);
+      box-shadow: 0 0 60px rgba(254,197,20,0.12);
+    }
+    .reveal .slides > section:not(.slide-title)::-webkit-scrollbar {
       width: 8px;
     }
-    .reveal .slides > section:not(.slide-title):not(.slide-video)::-webkit-scrollbar-thumb {
+    .reveal .slides > section:not(.slide-title)::-webkit-scrollbar-thumb {
       background: rgba(255,255,255,0.18);
       border-radius: 4px;
     }
@@ -343,12 +361,13 @@
   <h2 style="text-align:center;margin-bottom:0.6em;">Autonomous Observability in 60 Seconds</h2>
 
   <video
+    class="demo-video"
     controls
     autoplay
     muted
     loop
     playsinline
-    style="width:100%;max-height:520px;border-radius:12px;border:1px solid rgba(255,255,255,0.1);box-shadow:0 0 60px rgba(254,197,20,0.12);"
+    preload="metadata"
   >
     <source src="assets/workflows-optimized.mp4" type="video/mp4">
     Your browser does not support the video tag.
