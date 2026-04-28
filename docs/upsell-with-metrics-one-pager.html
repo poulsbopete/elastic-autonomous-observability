@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Upsell with Metrics — Overview (field one-pager)</title>
+  <style>
+    @page { size: letter; margin: 0.55in; }
+    * { box-sizing: border-box; }
+    body {
+      font-family: "Helvetica Neue", Helvetica, Arial, system-ui, sans-serif;
+      font-size: 11pt;
+      line-height: 1.35;
+      color: #1a1a1a;
+      max-width: 8.5in;
+      margin: 0 auto;
+      padding: 0.5in 0.6in 0.45in;
+    }
+    h1 {
+      font-size: 18pt;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      margin: 0 0 0.15em;
+      border-bottom: 3px solid #07c;
+      padding-bottom: 0.2em;
+    }
+    .tagline {
+      font-size: 13pt;
+      font-weight: 600;
+      margin: 0.5em 0 0.75em;
+      color: #111;
+    }
+    .pillars {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 0.65em;
+      margin: 0.6em 0 0.85em;
+    }
+    @media print {
+      body { padding: 0; }
+      .pillars { break-inside: avoid; }
+    }
+    @media (max-width: 720px) {
+      .pillars { grid-template-columns: 1fr; }
+    }
+    .pillar {
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      padding: 0.55em 0.6em;
+      background: #fafafa;
+    }
+    .pillar h2 {
+      font-size: 10.5pt;
+      margin: 0 0 0.35em;
+      color: #07c;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .pillar p {
+      margin: 0;
+      font-size: 10pt;
+      color: #333;
+    }
+    .micro {
+      font-size: 9.5pt;
+      color: #444;
+      border-top: 1px solid #ddd;
+      padding-top: 0.65em;
+      margin-top: 0.5em;
+    }
+    .micro strong { color: #111; }
+    .footer {
+      margin-top: 1em;
+      font-size: 8.5pt;
+      color: #666;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+    }
+    .elastic-wordmark {
+      font-weight: 700;
+      font-size: 11pt;
+      color: #07c;
+      letter-spacing: -0.03em;
+    }
+  </style>
+</head>
+<body>
+  <h1>Upsell with Metrics — Overview</h1>
+
+  <p class="tagline">Metrics at cloud scale should not mean slow queries, surprise bills, or a second stack for investigation. Lead with <strong>speed</strong>, <strong>TCO</strong>, and <strong>one place to decide</strong>.</p>
+
+  <section class="pillars" aria-label="Three field numbers plus narrative">
+    <div class="pillar">
+      <h2>~25× faster queries*</h2>
+      <p>Columnar metrics + a modern query engine: answer ad-hoc and dashboard questions quickly even as cardinality and retention grow.</p>
+    </div>
+    <div class="pillar">
+      <h2>~2.5× storage efficiency*</h2>
+      <p>Lower unit economics for the same signal—less “metric tax,” more budget for coverage and history instead of firefighting storage.</p>
+    </div>
+    <div class="pillar">
+      <h2>One analysis layer</h2>
+      <p>OTel-native ingest, Prometheus-native paths, and <strong>ES|QL</strong> across logs, metrics, and traces—fewer hops during incidents; optional Grafana surfaces where teams already live.</p>
+    </div>
+  </section>
+
+  <div class="micro">
+    <strong>Who cares:</strong> Kubernetes platform owners, platform / DevOps engineers, SREs, and FinOps leaders tired of tool sprawl, PromQL-only silos, or unpredictable vendor overages.
+    <br><br>
+    <strong>Outcomes to name:</strong> lower MTTR from unified context, predictable spend, less build-it-yourself glue (dashboards, SLOs, alert wiring).
+    <br><br>
+    <strong>*</strong> Comparative claims are positioning anchors—pair with Elastic benchmarks / value assessments for the account. Do not treat as guarantees.
+  </div>
+
+  <div class="footer">
+    <span>Internal field aid — keep to one screen or one printed page.</span>
+    <span class="elastic-wordmark">elastic</span>
+  </div>
+</body>
+</html>
