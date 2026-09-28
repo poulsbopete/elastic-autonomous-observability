@@ -7,9 +7,9 @@ virtualmachines:
     PRODUCT_TIER: complete
     PROJECT_TYPE: observability
     REGIONS: aws-us-east-1
-    # Demo fork: Systems Ops + Executive dashboards for every scenario — revert to notoriousbdg/main when merged upstream
+    # Demo fork: upstream main + Channel 21 Bedrock / table-full vs disk RCA
     ELASTIC_LAUNCH_DEMO_REPO: https://github.com/poulsbopete/elastic-launch-demo.git
-    ELASTIC_LAUNCH_DEMO_BRANCH: feat/systems-ops-executive-dashboards
+    ELASTIC_LAUNCH_DEMO_BRANCH: feat/sync-upstream-with-channel21
   memory: 12288
   cpus: 4
   allow_external_ingress:
