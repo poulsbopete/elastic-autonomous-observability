@@ -214,6 +214,26 @@ TS metrics*
 | SORT bucket5m DESC
 ```
 
+### Amazon Bedrock / LLM observability (always-on)
+The Fanatics **digital-marketplace** service calls Amazon Bedrock (`anthropic.claude-3-5-sonnet`) for listing recommendations. Those GenAI spans are present **before** you inject any fault.
+
+```esql
+FROM traces*
+| WHERE @timestamp > NOW() - 15 MINUTES
+| WHERE span.name LIKE "chat *"
+| STATS calls = COUNT(*) BY span.name
+| SORT calls DESC
+```
+
+```esql
+FROM logs*
+| WHERE @timestamp > NOW() - 15 MINUTES
+| WHERE body.text : "bedrock_model"
+| KEEP @timestamp, service.name, body.text
+| SORT @timestamp DESC
+| LIMIT 20
+```
+
 ### Log volume by service and severity over time
 ```esql
 FROM logs*

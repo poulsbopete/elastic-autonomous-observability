@@ -17,7 +17,9 @@ notes:
     - ✅ See an ES|QL alert rule fire within 30–60 seconds
     - ✅ Observe the AI agent begin its investigation automatically
 
-    **You have 20 fault channels to choose from** — each simulates a realistic incident across AWS, GCP, and Azure services. Pick any one and watch Elastic light up.
+    **You have 21 fault channels to choose from** — each simulates a realistic incident across AWS, GCP, and Azure services. Pick any one and watch Elastic light up.
+
+    **Channel 21** is the LLM observability + misleading RCA story: traces look like a full MySQL `listings` table, but the marketplace **container is out of disk**. Amazon Bedrock recommendation spans are always flowing so you can show GenAI observability even before injecting the fault.
 - type: text
   contents: |
     ## How Fault Detection Works
@@ -53,7 +55,7 @@ notes:
     This cascade across logs, metrics, and traces is what makes incidents hard to diagnose manually — and what makes Elastic's correlated view so powerful.
 - type: text
   contents: |
-    ## 20 Fault Channels — Pick One
+    ## 21 Fault Channels — Pick One
 
     | Category | Cloud | Example Faults |
     |----------|-------|---------------|
@@ -62,11 +64,12 @@ notes:
     | **WiFi / Network Access** | GCP | AP disconnect storm, channel interference |
     | **Network Services** | Azure | DNS failure, DHCP lease storm |
     | **Commerce** | AWS | Bid latency spike, payment timeout, catalog sync failure |
+    | **LLM + storage RCA** | AWS | **Channel 21** — slow checkout, `TABLE_IS_FULL`, actually container disk |
     | **Manufacturing** | AWS | Print queue overflow, QC rejection spike |
     | **Logistics** | GCP | Label printer failure, warehouse scanner desync |
     | **Cloud Ops** | GCP | Orphaned resource alert, VPN tunnel flapping |
 
-    Start with **Channel 12 — Auction Bid Latency Spike** for the clearest end-to-end demo.
+    Start with **Channel 21 — Slow Marketplace — Table Full vs Container Disk** for LLM observability + misleading RCA. Use **Channel 12 — Auction Bid Latency Spike** if you want the generic commerce path.
 tabs:
 - id: u5cmidsfkwal
   title: Demo App
@@ -105,7 +108,8 @@ Trigger a fault from the **Demo App**, then watch Elastic automatically investig
 1. Open the **Demo App** tab. On your running deployment, click **Chaos** (opens the incident simulator).
 2. Select any fault channel and click **Inject Fault**
 
-> **Recommended:** Start with **Channel 12 — Auction Bid Latency Spike** for the clearest end-to-end demo.
+> **Recommended for LLM observability + RCA:** **Channel 21 — Slow Marketplace — Table Full vs Container Disk**.
+> Checkout looks like MySQL `TABLE_IS_FULL` on `listings`. Host/pod filesystem is actually ~99% full, so InnoDB and the Bedrock response cache cannot write.
 
 While the fault propagates, run this query in **Elastic Serverless → Discover → ES|QL** to watch the error spike in real time:
 
@@ -143,5 +147,50 @@ A new case will appear automatically with:
 - The fault name and affected service in the title
 - The AI agent's root-cause analysis in the description
 - Severity set to **High**
+
+---
+
+## Optional — LLM observability + the misleading RCA (Channel 21)
+
+Do this when you want the Bedrock / slow-app story.
+
+**Before injecting the fault**, confirm Bedrock spans are already flowing (always-on from `digital-marketplace`):
+
+```esql
+FROM traces*
+| WHERE @timestamp > NOW() - 15 MINUTES
+| WHERE span.name LIKE "chat *"
+| STATS calls = COUNT(*) BY span.name
+| SORT calls DESC
+```
+
+Then inject **Channel 21** and show the misdirection:
+
+1. **Traces look like the database** — slow `POST /api/v1/marketplace/checkout` with a child `INSERT listings` span and `TABLE_IS_FULL` (MySQL 1114).
+2. **Logs match that story** — `body.text` contains `TABLE_IS_FULL`.
+3. **Metrics tell the real story** — pod/host filesystem ~99%, `k8s.node.condition_disk_pressure = 1`.
+
+```esql
+FROM logs*
+| WHERE @timestamp > NOW() - 15 MINUTES
+| WHERE body.text : "TABLE_IS_FULL"
+| KEEP @timestamp, service.name, body.text
+| SORT @timestamp DESC
+| LIMIT 20
+```
+
+```esql
+TS metrics*
+| WHERE @timestamp > NOW() - 15 MINUTES
+| STATS
+    pod_fs = MAX(k8s.pod.filesystem.utilization),
+    host_fs = MAX(metrics.system.filesystem.utilization),
+    disk_pressure = MAX(k8s.node.condition_disk_pressure)
+  BY k8s.pod.name, host.name
+| SORT pod_fs DESC
+| LIMIT 20
+```
+
+The AI agent runbook for Channel 21 tells it **not** to stop at the table-full error — recycle the marketplace pod (`free_ephemeral_storage`) instead of resizing MySQL.
 
 ✅ **Ready to continue when** you can see a workflow execution and an auto-created case in Elastic Serverless.

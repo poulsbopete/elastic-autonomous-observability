@@ -12,6 +12,8 @@ description: |-
   - Connect a live OTLP telemetry stream to Elastic Cloud
   - Deploy 9 simulated microservices with a single click
   - Trigger multi-cloud fault channels from a chaos controller UI
+  - See Amazon Bedrock LLM spans on the marketplace (GenAI observability)
+  - Trigger Channel 21: slow app traces look like a full DB table — real cause is container disk
   - Watch an AI agent investigate anomalies and run auto-remediation workflows
 
   **Time:** ~45 minutes
